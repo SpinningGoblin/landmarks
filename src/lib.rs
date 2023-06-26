@@ -1,3 +1,4 @@
+pub mod config;
 pub mod minecraft;
 mod string_visitor;
 
