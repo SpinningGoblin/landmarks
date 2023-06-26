@@ -8,3 +8,26 @@ pub enum Dimension {
     Nether,
     End,
 }
+
+impl ToString for Dimension {
+    fn to_string(&self) -> String {
+        match *self {
+            Dimension::Overworld => "overworld",
+            Dimension::Nether => "nether",
+            Dimension::End => "end",
+        }
+        .to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Dimension;
+
+    #[test]
+    pub fn to_string() {
+        let dimension = Dimension::Overworld;
+
+        assert_eq!("overworld", dimension.to_string());
+    }
+}

@@ -7,3 +7,13 @@ pub enum Platform {
     Bedrock,
     Java,
 }
+
+impl ToString for Platform {
+    fn to_string(&self) -> String {
+        match *self {
+            Platform::Bedrock => "bedrock",
+            Platform::Java => "java",
+        }
+        .to_string()
+    }
+}
