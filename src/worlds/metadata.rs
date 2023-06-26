@@ -39,7 +39,7 @@ mod tests {
     pub fn serialize() {
         let seed = Seed("1112222".to_string());
         let metadata = Metadata::from(seed);
-        let expected = "{\"seed\":\"1112222\",\"name\":\"1112222\",\"tags\":[],\"platform\":\"Bedrock\",\"notes\":null}";
+        let expected = "{\"seed\":\"1112222\",\"name\":\"1112222\",\"tags\":[],\"platform\":\"bedrock\",\"notes\":null}";
         let serialized = serde_json::to_string(&metadata).unwrap();
         assert_eq!(expected, serialized);
     }
