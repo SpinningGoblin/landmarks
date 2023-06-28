@@ -16,3 +16,9 @@ pub struct CreateWorld {
     #[serde(default)]
     pub notes: Option<String>,
 }
+
+impl CreateWorld {
+    pub fn guaranteed_name(&self) -> String {
+        self.name.clone().unwrap_or(self.seed.to_string())
+    }
+}
