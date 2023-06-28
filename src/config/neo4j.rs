@@ -1,3 +1,6 @@
+use neo4rs::Graph;
+
+#[derive(Clone, Debug)]
 pub struct ConnectionConfig {
     pub username: String,
     pub uri: String,
@@ -14,5 +17,10 @@ impl ConnectionConfig {
             uri,
             password,
         })
+    }
+
+    pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
+        let graph = Graph::new(&self.uri, &self.username, &self.password).await?;
+        Ok(graph)
     }
 }
