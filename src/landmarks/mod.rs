@@ -4,4 +4,4 @@ mod metadata;
 
 pub use create_landmark::CreateLandmark;
 pub use landmark::Landmark;
-pub use metadata::Metadata;
+pub use metadata::LandmarkMetadata;
