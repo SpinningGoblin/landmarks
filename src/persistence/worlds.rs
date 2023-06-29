@@ -48,7 +48,6 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         {user_match}
         {shared_matches}"
     );
-    println!("{full_query}");
 
     let mut result = graph.execute(query(&full_query)).await?;
     let mut worlds: Vec<WorldMetadata> = Vec::new();
@@ -70,10 +69,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         let tag_values: Vec<String> = row
             .get("tags")
             .ok_or(anyhow::Error::msg("no_tags_column"))?;
-        let tags = tag_values
-            .into_iter()
-            .map(Tag)
-            .collect::<Vec<Tag>>();
+        let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
 
         let platform_name: String = row
             .get("platform")
@@ -171,7 +167,6 @@ pub async fn share_world(
             {merge_query}
             RETURN target.name"
     );
-    println!("{full_query}");
     transaction.run(query(&full_query)).await?;
 
     Ok(())
