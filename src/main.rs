@@ -24,6 +24,14 @@ async fn main() {
             "/worlds/:world_id/landmarks",
             post(landmarks::api::handlers::add_landmark_to_world),
         )
+        .route(
+            "/worlds/:world_id/landmarks",
+            get(landmarks::api::handlers::landmarks_for_world),
+        )
+        .route(
+            "/landmarks/:landmark_id",
+            get(landmarks::api::handlers::landmark_by_id),
+        )
         .with_state(neo4j_config);
 
     // run our app with hyper, listening globally on port 3000
