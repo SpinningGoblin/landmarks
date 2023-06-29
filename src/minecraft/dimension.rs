@@ -1,3 +1,5 @@
+use std::{fmt::Display, str::FromStr};
+
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
@@ -9,14 +11,28 @@ pub enum Dimension {
     End,
 }
 
-impl ToString for Dimension {
-    fn to_string(&self) -> String {
-        match *self {
+impl Display for Dimension {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match *self {
             Dimension::Overworld => "overworld",
             Dimension::Nether => "nether",
             Dimension::End => "end",
+        };
+
+        f.write_str(value)
+    }
+}
+
+impl FromStr for Dimension {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "overworld" => Ok(Dimension::Overworld),
+            "nether" => Ok(Dimension::Nether),
+            "end" => Ok(Dimension::End),
+            _ => Err(anyhow::Error::msg("invalid_dimension")),
         }
-        .to_string()
     }
 }
 
