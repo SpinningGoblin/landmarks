@@ -33,12 +33,16 @@ pub async fn create(
         "coordinate_3d: point({{ x: {}, y: {}, z: {}, crs: 'cartesian-3D' }})",
         &create.coordinate.x, &create.coordinate.y, &create.coordinate.z
     );
+    let landmark_name = format!("name: '{}'", &create.name);
+    let landmark_note = format!("notes: '{}'", &create.notes.unwrap_or_default());
     let landmark_create = format!(
-        "CREATE (landmark:Landmark {{ id: '{}', {}, {}, {} }})",
+        "CREATE (landmark:Landmark {{ id: '{}', {}, {}, {}, {}, {} }})",
         id.to_string(),
         basic_position,
         coordinate_2d,
-        coordinate_3d
+        coordinate_3d,
+        landmark_name,
+        landmark_note
     );
     let dimension_match = format!(
         "MERGE (dimension:Dimension {{ name: '{}' }})",

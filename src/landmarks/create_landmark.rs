@@ -7,10 +7,15 @@ use crate::{
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CreateLandmark {
+    pub name: String,
     pub coordinate: Coordinate,
     #[serde(default)]
     pub biomes: Vec<Biome>,
     pub dimension: Dimension,
+    #[serde(default)]
     pub farms: Vec<Farm>,
+    #[serde(default)]
     pub tags: Vec<Tag>,
+    #[serde(default)]
+    pub notes: Option<String>,
 }
