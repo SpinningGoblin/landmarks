@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use neo4rs::{query, Graph, Node, Txn};
+use neo4rs::{query, Graph, Node, Query, Txn};
 use uuid::Uuid;
 
 use crate::{
@@ -9,13 +9,16 @@ use crate::{
     Tag,
 };
 
-pub async fn check_world_exists(transaction: &Txn, world_id: &Uuid) -> Result<bool, anyhow::Error> {
+fn world_match_query(world_id: &Uuid) -> Query {
     let world_match = format!(
         "MATCH (world:World {{ id: '{}' }}) RETURN world.id",
         world_id.to_string()
     );
+    query(&world_match)
+}
 
-    let mut result = transaction.execute(query(&world_match)).await?;
+pub async fn check_world_exists(transaction: &Txn, world_id: &Uuid) -> Result<bool, anyhow::Error> {
+    let mut result = transaction.execute(world_match_query(world_id)).await?;
     let world_row = result.next().await?;
     Ok(world_row.is_some())
 }
