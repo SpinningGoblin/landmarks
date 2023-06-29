@@ -9,6 +9,17 @@ use crate::{
     Tag,
 };
 
+pub async fn check_world_exists(transaction: &Txn, world_id: &Uuid) -> Result<bool, anyhow::Error> {
+    let world_match = format!(
+        "MATCH (world:World {{ id: '{}' }}) RETURN world.id",
+        world_id.to_string()
+    );
+
+    let mut result = transaction.execute(query(&world_match)).await?;
+    let world_row = result.next().await?;
+    Ok(world_row.is_some())
+}
+
 pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata>, anyhow::Error> {
     let user_match = format!("MATCH (user:User {{ name: '{}' }})", user);
     let world_matches = r#"
@@ -27,8 +38,13 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared:User)
         RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
         "#;
-    let full_query =
-        format!("{user_match}\n{world_matches}\nUNION ALL\n{user_match}\n{shared_matches}");
+    let full_query = format!(
+        "{user_match}
+        {world_matches}
+        UNION ALL
+        {user_match}
+        {shared_matches}"
+    );
     println!("{full_query}");
 
     let mut result = graph.execute(query(&full_query)).await?;
@@ -117,7 +133,15 @@ pub async fn create(
         .collect::<Vec<String>>()
         .join("\n");
     let full_query = format!(
-        "{user_match}\n{platform_match}\n{tag_merge}\n{world_create}\n{world_platform_rel}\n{world_user_rel}\n{user_world_rel}\n{world_tag_rels}\nRETURN world.id"
+        "{user_match}
+        {platform_match}
+        {tag_merge}
+        {world_create}
+        {world_platform_rel}
+        {world_user_rel}
+        {user_world_rel}
+        {world_tag_rels}
+        RETURN world.id"
     );
 
     transaction.run(query(&full_query)).await?;
@@ -138,8 +162,12 @@ pub async fn share_world(
     );
     let target_query = format!("MATCH (target:User {{ name: '{}' }})", user);
     let merge_query = "MERGE (world)-[:SHAREDWITH]->(target)";
-    let full_query =
-        format!("{creator_world_query}\n{target_query}\n{merge_query}\nRETURN target.name");
+    let full_query = format!(
+        "{creator_world_query}
+            {target_query}
+            {merge_query}
+            RETURN target.name"
+    );
     println!("{full_query}");
     transaction.run(query(&full_query)).await?;
 
