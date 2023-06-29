@@ -7,12 +7,79 @@ pub async fn ensure_minecraft_nodes(graph: &neo4rs::Graph) -> Result<(), anyhow:
     let mut biome_merges: Vec<String> = Vec::new();
     let mut biome_returns: Vec<String> = Vec::new();
     Biome::iter().for_each(|biome| {
-        biome_merges.push(format!(
-            "MERGE ({}: Biome {{name: '{}'}})",
-            biome.to_string(),
-            biome.to_string()
-        ));
-        biome_returns.push(biome.to_string());
+        match biome {
+            Biome::Other(_) => {}
+            Biome::Ocean
+            | Biome::DeepOcean
+            | Biome::WarmOcean
+            | Biome::LukewarmOcean
+            | Biome::DeepLukewarmOcean
+            | Biome::DeepColdOcean
+            | Biome::FrozenOcean
+            | Biome::DeepFrozenOcean
+            | Biome::MushroomFields
+            | Biome::JaggedPeaks
+            | Biome::FrozenPeaks
+            | Biome::StonyPeaks
+            | Biome::Meadow
+            | Biome::CherryGrove
+            | Biome::Grove
+            | Biome::SnowySlopes
+            | Biome::WindsweptHills
+            | Biome::WindsweptGravellyHills
+            | Biome::WindsweptForest
+            | Biome::Forest
+            | Biome::FlowerForest
+            | Biome::Taiga
+            | Biome::OldGrowthPineTaiga
+            | Biome::OldGrowthSpruceTaiga
+            | Biome::SnowyTaiga
+            | Biome::BirchForest
+            | Biome::OldGrowthBirchForest
+            | Biome::DarkForest
+            | Biome::Jungle
+            | Biome::SparseJungle
+            | Biome::BambooJungle
+            | Biome::River
+            | Biome::FrozenRiver
+            | Biome::Swamp
+            | Biome::MangroveSwamp
+            | Biome::Beach
+            | Biome::SnowyBeach
+            | Biome::StonyShore
+            | Biome::Plains
+            | Biome::SunflowerPlains
+            | Biome::SnowyPlains
+            | Biome::IceSpikes
+            | Biome::Desert
+            | Biome::Savanna
+            | Biome::SavannaPlateau
+            | Biome::WindsweptSavanna
+            | Biome::Badlands
+            | Biome::WoodedBadlands
+            | Biome::ErodedBadlands
+            | Biome::DeepDark
+            | Biome::DripstoneCaves
+            | Biome::LushCaves
+            | Biome::TheVoid
+            | Biome::NetherWastes
+            | Biome::SoulSandValley
+            | Biome::CrimsonForest
+            | Biome::WarpedForest
+            | Biome::BasaltDeltas
+            | Biome::TheEnd
+            | Biome::SmallEndIslands
+            | Biome::EndMidlands
+            | Biome::EndHighlands
+            | Biome::EndBarrens => {
+                biome_merges.push(format!(
+                    "MERGE ({}: Biome {{name: '{}'}})",
+                    biome.to_string(),
+                    biome.to_string()
+                ));
+                biome_returns.push(biome.to_string());
+            }
+        };
     });
 
     let mut dimension_merges: Vec<String> = Vec::new();
