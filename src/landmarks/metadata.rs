@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::minecraft::{Biome, Dimension};
+use crate::minecraft::Coordinate;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Metadata {
-    #[serde(default)]
-    pub biomes: Vec<Biome>,
-    pub dimension: Dimension,
+pub struct LandmarkMetadata {
+    pub id: Uuid,
+    pub coordinate: Coordinate,
+    pub name: String,
+    pub notes: Option<String>,
 }
