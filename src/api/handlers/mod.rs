@@ -1,3 +1,4 @@
+pub(self) mod headers;
 mod health_check;
 mod worlds;
 

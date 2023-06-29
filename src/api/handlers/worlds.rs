@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{config::neo4j::ConnectionConfig, persistence, worlds::CreateWorld};
 
-const USER_HEADER: &str = "Landmark-User";
+use super::headers::USER_HEADER;
 
 pub async fn worlds_for_creator(
     State(neo4j_config): State<ConnectionConfig>,
