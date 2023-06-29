@@ -72,7 +72,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
             .ok_or(anyhow::Error::msg("no_tags_column"))?;
         let tags = tag_values
             .into_iter()
-            .map(|name| Tag(name))
+            .map(Tag)
             .collect::<Vec<Tag>>();
 
         let platform_name: String = row

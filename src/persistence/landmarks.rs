@@ -223,7 +223,7 @@ pub async fn landmark_by_id(
                 .ok_or(anyhow::Error::msg("no_tags_column"))?;
             let tags = tag_values
                 .into_iter()
-                .map(|name| Tag(name))
+                .map(Tag)
                 .collect::<Vec<Tag>>();
 
             let farm_values: Vec<String> = row
@@ -231,7 +231,7 @@ pub async fn landmark_by_id(
                 .ok_or(anyhow::Error::msg("no_farms_column"))?;
             let farms = farm_values
                 .into_iter()
-                .map(|name| Farm(name))
+                .map(Farm)
                 .collect::<Vec<Farm>>();
 
             let biome_values: Vec<String> = row
