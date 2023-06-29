@@ -1,0 +1,17 @@
+version: '3'
+
+name: landmarks
+
+services:
+  web:
+    build: .
+    ports:
+      - 8084:8082
+    networks:
+      - landmarks
+    environment:
+      NEO4J_PASSWORD: $NEO4J_PASSWORD
+      NEO4J_CONNECTION_URI: $NEO4J_CONNECTION_URI
+
+networks:
+  landmarks:

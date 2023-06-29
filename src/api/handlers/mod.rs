@@ -1,4 +1,4 @@
-pub(self) mod headers;
+pub(super) mod headers;
 mod health_check;
 mod landmarks;
 mod worlds;

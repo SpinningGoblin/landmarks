@@ -2,12 +2,12 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use landmarks::{config, persistence};
+use landmarks::{config::app_state::AppState, persistence};
 
 #[tokio::main]
 async fn main() {
-    let neo4j_config = config::neo4j::ConnectionConfig::load_env().unwrap();
-    let graph = neo4j_config.to_graph().await.unwrap();
+    let app_state = AppState::load_from_env();
+    let graph = app_state.to_graph().await.unwrap();
 
     persistence::minecraft::ensure_minecraft_nodes(&graph)
         .await
@@ -32,7 +32,7 @@ async fn main() {
             "/landmarks/:landmark_id",
             get(landmarks::api::handlers::landmark_by_id),
         )
-        .with_state(neo4j_config);
+        .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8082").await.unwrap();
