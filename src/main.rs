@@ -14,7 +14,7 @@ async fn main() {
         .unwrap();
     let app = Router::new()
         .route("/ping", get(landmarks::api::handlers::ping))
-        .route("/worlds", get(landmarks::api::handlers::worlds_for_creator))
+        .route("/worlds", get(landmarks::api::handlers::worlds_for_user))
         .route("/worlds", post(landmarks::api::handlers::create_world))
         .route(
             "/worlds/:world_id/share",

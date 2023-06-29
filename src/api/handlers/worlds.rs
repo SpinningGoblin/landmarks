@@ -11,7 +11,7 @@ use crate::{config::neo4j::ConnectionConfig, persistence, worlds::CreateWorld};
 
 use super::headers::USER_HEADER;
 
-pub async fn worlds_for_creator(
+pub async fn worlds_for_user(
     State(neo4j_config): State<ConnectionConfig>,
     headers: HeaderMap,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
