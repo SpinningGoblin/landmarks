@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Coordinate {
-    pub x: i128,
-    pub y: i128,
-    pub z: i128,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
 }
