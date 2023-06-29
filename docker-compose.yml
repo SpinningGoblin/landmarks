@@ -6,7 +6,7 @@ services:
   web:
     build: .
     ports:
-      - 8084:8082
+      - 8084:8080
     networks:
       - landmarks
     environment:
