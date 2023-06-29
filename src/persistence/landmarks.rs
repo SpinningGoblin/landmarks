@@ -1,7 +1,13 @@
-use neo4rs::{query, Txn};
+use std::str::FromStr;
+
+use neo4rs::{query, Graph, Node, Txn};
 use uuid::Uuid;
 
-use crate::landmarks::CreateLandmark;
+use crate::{
+    landmarks::{CreateLandmark, Landmark, LandmarkMetadata},
+    minecraft::{Biome, Coordinate, Dimension, Farm},
+    Tag,
+};
 
 pub async fn create(
     transaction: &Txn,
@@ -129,4 +135,132 @@ pub async fn create(
     transaction.run(query(&full_query)).await?;
 
     Ok(id)
+}
+
+pub async fn landmarks_for_world(
+    graph: &Graph,
+    world_id: &Uuid,
+) -> Result<Vec<LandmarkMetadata>, anyhow::Error> {
+    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id.to_string());
+    let landmark_match = format!("MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)");
+    let full_query = format!(
+        "{world_match}
+        {landmark_match}
+        RETURN landmark"
+    );
+
+    let mut result = graph.execute(query(&full_query)).await?;
+    let mut landmarks: Vec<LandmarkMetadata> = Vec::new();
+
+    while let Ok(Some(row)) = result.next().await {
+        let landmark_node: Node = row
+            .get("landmark")
+            .ok_or(anyhow::Error::msg("no_landmark_node"))?;
+        let name: String = landmark_node.get("name").unwrap_or_default();
+        let notes: Option<String> = landmark_node.get("notes");
+        let id_value: String = landmark_node
+            .get("id")
+            .ok_or(anyhow::Error::msg("no_landmark_id"))?;
+        let id = Uuid::parse_str(&id_value)?;
+        let x: i64 = landmark_node.get("x").unwrap();
+        let y: i64 = landmark_node.get("y").unwrap();
+        let z: i64 = landmark_node.get("z").unwrap();
+
+        landmarks.push(LandmarkMetadata {
+            id,
+            coordinate: Coordinate { x, y, z },
+            name,
+            notes,
+        })
+    }
+
+    Ok(landmarks)
+}
+
+pub async fn landmark_by_id(
+    graph: &Graph,
+    landmark_id: &Uuid,
+) -> Result<Option<Landmark>, anyhow::Error> {
+    let landmark_match = format!(
+        "MATCH (landmark:Landmark {{ id: '{}' }})",
+        landmark_id.to_string()
+    );
+    let selects_and_return = r#"
+        OPTIONAL MATCH (landmark)-[:HASTAG]->(tag:Tag)
+        OPTIONAL MATCH (landmark)-[:IN]->(dimension:Dimension)
+        OPTIONAL MATCH (landmark)-[:HASFARM]->(farm:Farm)
+        OPTIONAL MATCH (landmark)-[:HASBIOME]->(biome:Biome)
+        RETURN landmark,
+        apoc.coll.toSet(collect(tag.name)) as tags,
+        apoc.coll.toSet(collect(farm.name)) as farms,
+        apoc.coll.toSet(collect(biome.name)) as biomes,
+        dimension.name as dimension
+        "#;
+    let full_query = format!(
+        "{landmark_match}
+        {selects_and_return}"
+    );
+
+    let mut result = graph.execute(query(&full_query)).await.unwrap();
+
+    match result.next().await {
+        Ok(Some(row)) => {
+            let landmark_node: Node = row
+                .get("landmark")
+                .ok_or(anyhow::Error::msg("no_landmark_node"))?;
+            let name: String = landmark_node.get("name").unwrap_or_default();
+            let notes: Option<String> = landmark_node.get("notes");
+            let id_value: String = landmark_node
+                .get("id")
+                .ok_or(anyhow::Error::msg("no_landmark_id"))?;
+            let id = Uuid::parse_str(&id_value)?;
+            let x: i64 = landmark_node.get("x").unwrap();
+            let y: i64 = landmark_node.get("y").unwrap();
+            let z: i64 = landmark_node.get("z").unwrap();
+
+            let tag_values: Vec<String> = row
+                .get("tags")
+                .ok_or(anyhow::Error::msg("no_tags_column"))?;
+            let tags = tag_values
+                .into_iter()
+                .map(|name| Tag(name))
+                .collect::<Vec<Tag>>();
+
+            let farm_values: Vec<String> = row
+                .get("farms")
+                .ok_or(anyhow::Error::msg("no_farms_column"))?;
+            let farms = farm_values
+                .into_iter()
+                .map(|name| Farm(name))
+                .collect::<Vec<Farm>>();
+
+            let biome_values: Vec<String> = row
+                .get("biomes")
+                .ok_or(anyhow::Error::msg("no_biomes_column"))?;
+            let biomes = biome_values
+                .into_iter()
+                .map(|name| Biome::from_str(&name).unwrap())
+                .collect::<Vec<Biome>>();
+
+            let dimension_value: String = row
+                .get("dimension")
+                .ok_or(anyhow::Error::msg("no_dimension_column"))?;
+            let dimension = Dimension::from_str(&dimension_value).unwrap();
+
+            Ok(Some(Landmark {
+                metadata: LandmarkMetadata {
+                    id,
+                    coordinate: Coordinate { x, y, z },
+                    name,
+                    notes,
+                },
+                farms,
+                tags,
+                biomes,
+                dimension,
+            }))
+        }
+        Ok(None) => Ok(None),
+        Err(e) => Err(anyhow::Error::new(e)),
+    }
 }
