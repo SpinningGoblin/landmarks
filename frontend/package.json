@@ -6,24 +6,33 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --base=/landmarks/",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prettier": "prettier --write src",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-query": "^4.29.19",
-    "evergreen-ui": "^7.1.9",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.3",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.13.6",
+    "@tanstack/react-query": "4.29.19",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "wouter": "^2.11.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
     "@vitejs/plugin-react-swc": "^3.3.2",
-    "eslint": "^8.43.0",
+    "eslint": "^8.44.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
+    "prettier": "^2.8.8",
     "typescript": "^5.1.6",
     "vite": "^4.3.9"
   }
