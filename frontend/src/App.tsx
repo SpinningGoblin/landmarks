@@ -28,7 +28,7 @@ export const App: FC<AppProps> = ({ startingUser }) => {
             <SignIn
               userChanged={(user) => {
                 setUser(user);
-                navigate("/");
+                navigate(`/${basePath}`);
               }}
             />
           </Route>
