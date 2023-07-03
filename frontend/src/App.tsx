@@ -1,17 +1,17 @@
-import { AddLandmark, AuthenticatedPage, Home, SignIn, World } from "./pages";
+import { AddLandmark, Home, SignIn, World } from "./pages";
 import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
-import { Route, Routes, useNavigate } from "react-router-dom";
 
 export interface AppProps {
   basePath: string;
   startingUser?: User;
 }
 
-export const App: FC<AppProps> = ({ startingUser, basePath }) => {
+export const App: FC<AppProps> = ({ startingUser }) => {
   const [user, setUser] = useState<User | undefined>(startingUser);
-  const navigate = useNavigate();
+  const [worldId, setWorldId] = useState<string | undefined>();
+  const [isAddingLandmark, setIsAddingLandmark] = useState<boolean>();
 
   console.log("I'm here?");
 
@@ -21,46 +21,32 @@ export const App: FC<AppProps> = ({ startingUser, basePath }) => {
     }
   }, [user]);
 
+  const signedIn = !!user;
+
   return (
     <>
       <AuthProvider value={user}>
-        <Routes>
-          <Route
-            element={
-              <SignIn
-                userChanged={(user) => {
-                  setUser(user);
-                  navigate(`/${basePath}`);
-                }}
+        {!signedIn && (
+          <SignIn
+            userChanged={(user) => {
+              setUser(user);
+            }}
+          />
+        )}
+        {signedIn && (
+          <>
+            {isAddingLandmark && worldId && <AddLandmark worldId={worldId} />}
+            {worldId ? (
+              <World
+                worldId={worldId}
+                onClickAddLandmark={() => setIsAddingLandmark(true)}
+                onClickLandmark={(landmarkId) => console.log(landmarkId)}
               />
-            }
-            path="/sign-in"
-          />
-          <Route
-            element={
-              <AuthenticatedPage>
-                <AddLandmark />
-              </AuthenticatedPage>
-            }
-            path="/world/:worldId/add_landmark"
-          />
-          <Route
-            element={
-              <AuthenticatedPage>
-                <World />
-              </AuthenticatedPage>
-            }
-            path="/world/:worldId"
-          />
-          <Route
-            element={
-              <AuthenticatedPage>
-                <Home />
-              </AuthenticatedPage>
-            }
-            path=""
-          />
-        </Routes>
+            ) : (
+              <Home onClickWorld={setWorldId} />
+            )}
+          </>
+        )}
       </AuthProvider>
     </>
   );

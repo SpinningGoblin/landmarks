@@ -1,25 +1,20 @@
 import { FC } from "react";
 import { useWorld } from "../hooks/worlds";
-import { Chip, Paper, Stack, Typography } from "@mui/material";
+import { Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { useLandmarks } from "../hooks/landmarks";
 import { LandmarkCard } from "../components/LandmarkCard";
-import { Link, useParams } from "react-router-dom";
 
 export interface WorldProps {
   worldId: string;
+  onClickLandmark: (landmarkId: string) => void;
+  onClickAddLandmark: () => void;
 }
 
-export const WorldContainer: FC = () => {
-  const { worldId } = useParams();
-
-  if (!worldId) {
-    return <Paper>World ID needed for world page</Paper>;
-  }
-
-  return <World worldId={worldId} />;
-};
-
-export const World: FC<WorldProps> = ({ worldId }) => {
+export const World: FC<WorldProps> = ({
+  worldId,
+  onClickLandmark,
+  onClickAddLandmark,
+}) => {
   const { world, isLoading: isWorldLoading } = useWorld(worldId);
   const { landmarks, isLoading: isLandmarksLoading } = useLandmarks(worldId);
 
@@ -44,11 +39,15 @@ export const World: FC<WorldProps> = ({ worldId }) => {
           <Stack spacing={1}>
             <Stack direction="row" spacing={4} alignItems="center">
               <Typography variant="h4">Landmarks</Typography>
-              <Link to={`/world/${worldId}/add_landmark`}>+ Add Landmark</Link>
+              <Button onClick={onClickAddLandmark}>+ Add Landmark</Button>
             </Stack>
             <Stack spacing={2}>
               {landmarks?.map((landmark) => (
-                <LandmarkCard key={landmark.id} landmark={landmark} />
+                <LandmarkCard
+                  key={landmark.id}
+                  landmark={landmark}
+                  onClickLandmark={onClickLandmark}
+                />
               ))}
             </Stack>
           </Stack>

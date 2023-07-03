@@ -1,7 +1,9 @@
 import { FC } from "react";
-import { useParams } from "react-router-dom";
 
-export const AddLandmark: FC = () => {
-  const { worldId } = useParams();
-  return <div>Woooooooo {worldId}</div>;
-};
+interface AddLandmarkProps {
+  worldId: string;
+}
+
+export const AddLandmark: FC<AddLandmarkProps> = ({ worldId }) => (
+  <div>Woooooooo {worldId}</div>
+);

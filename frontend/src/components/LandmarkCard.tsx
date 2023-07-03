@@ -1,14 +1,17 @@
 import { FC } from "react";
 import { LandmarkMetadata } from "../api/LandmarkMetadata";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Button, Card, CardContent, Typography } from "@mui/material";
 import { bullet } from "./bullet";
-import { Link } from "react-router-dom";
 
 export interface LandmarkCardProps {
   landmark: LandmarkMetadata;
+  onClickLandmark: (landmarkId: string) => void;
 }
 
-export const LandmarkCard: FC<LandmarkCardProps> = ({ landmark }) => (
+export const LandmarkCard: FC<LandmarkCardProps> = ({
+  landmark,
+  onClickLandmark,
+}) => (
   <Card sx={{ minWidth: 275 }} variant="outlined">
     <CardContent>
       <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -19,7 +22,9 @@ export const LandmarkCard: FC<LandmarkCardProps> = ({ landmark }) => (
         Coordinates {"->"} X: {landmark.coordinate.x}, Y:{" "}
         {landmark.coordinate.y}, Z: {landmark.coordinate.z}
       </Typography>
-      <Link to={`/landmarks/${landmark.id}`}>View landmark</Link>
+      <Button onClick={() => onClickLandmark(landmark.id)}>
+        View Landmark
+      </Button>
     </CardContent>
   </Card>
 );
