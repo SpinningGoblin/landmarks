@@ -1,18 +1,17 @@
-import { Redirect, Route, Router, useLocation } from "wouter";
-import { getBasePath } from "./config";
-import { AddLandmark, Home, SignIn, World } from "./pages";
+import { AddLandmark, AuthenticatedPage, Home, SignIn, World } from "./pages";
 import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
+import { Route, Routes, useNavigate } from "react-router-dom";
 
 export interface AppProps {
+  basePath: string;
   startingUser?: User;
 }
 
-export const App: FC<AppProps> = ({ startingUser }) => {
-  const basePath = getBasePath();
+export const App: FC<AppProps> = ({ startingUser, basePath }) => {
   const [user, setUser] = useState<User | undefined>(startingUser);
-  const [_, navigate] = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -23,23 +22,43 @@ export const App: FC<AppProps> = ({ startingUser }) => {
   return (
     <>
       <AuthProvider value={user}>
-        <Router base={basePath}>
-          <Route path="/sign-in">
-            <SignIn
-              userChanged={(user) => {
-                setUser(user);
-                navigate(`/${basePath}`);
-              }}
-            />
-          </Route>
-          <Route path="/world/:worldId/add_landmark">
-            {(params) => <AddLandmark worldId={params.worldId}></AddLandmark>}
-          </Route>
-          <Route path="/world/:worldId">
-            {(params) => <World worldId={params.worldId}></World>}
-          </Route>
-          <Route path="">{user ? <Home /> : <Redirect to="/sign-in" />}</Route>
-        </Router>
+        <Routes>
+          <Route
+            element={
+              <SignIn
+                userChanged={(user) => {
+                  setUser(user);
+                  navigate(`/${basePath}`);
+                }}
+              />
+            }
+            path="/sign-in"
+          />
+          <Route
+            element={
+              <AuthenticatedPage>
+                <AddLandmark />
+              </AuthenticatedPage>
+            }
+            path="/world/:worldId/add_landmark"
+          />
+          <Route
+            element={
+              <AuthenticatedPage>
+                <World />
+              </AuthenticatedPage>
+            }
+            path="/world/:worldId"
+          />
+          <Route
+            element={
+              <AuthenticatedPage>
+                <Home />
+              </AuthenticatedPage>
+            }
+            path=""
+          />
+        </Routes>
       </AuthProvider>
     </>
   );

@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 export const useWorlds = () => {
   const { currentUser } = useUser();
+
   const { data: worlds, isLoading } = useQuery(
     ["worlds"],
     () => fetchWorlds(currentUser),

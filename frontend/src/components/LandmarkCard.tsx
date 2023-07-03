@@ -2,7 +2,7 @@ import { FC } from "react";
 import { LandmarkMetadata } from "../api/LandmarkMetadata";
 import { Card, CardContent, Typography } from "@mui/material";
 import { bullet } from "./bullet";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 export interface LandmarkCardProps {
   landmark: LandmarkMetadata;

@@ -2,7 +2,7 @@ import { FC } from "react";
 import { WorldMetadata } from "../api/WorldMetadata";
 import { Card, CardContent, Typography } from "@mui/material";
 import { bullet } from "./bullet";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 export interface WorldCardProps {
   world: WorldMetadata;

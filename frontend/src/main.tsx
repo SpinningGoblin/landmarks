@@ -8,6 +8,8 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import { getBasePath } from "./config";
+import { HashRouter } from "react-router-dom";
 
 const getStoredUser = (): User | undefined => {
   const stored = localStorage.getItem("landmark-user");
@@ -24,10 +26,14 @@ const queryClient = new QueryClient({
   },
 });
 
+const basePath = getBasePath();
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App startingUser={getStoredUser()} />
-    </QueryClientProvider>
+    <HashRouter basename={basePath}>
+      <QueryClientProvider client={queryClient}>
+        <App startingUser={getStoredUser()} basePath={basePath} />
+      </QueryClientProvider>
+    </HashRouter>
   </React.StrictMode>,
 );

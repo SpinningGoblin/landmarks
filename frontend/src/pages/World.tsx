@@ -3,11 +3,21 @@ import { useWorld } from "../hooks/worlds";
 import { Chip, Paper, Stack, Typography } from "@mui/material";
 import { useLandmarks } from "../hooks/landmarks";
 import { LandmarkCard } from "../components/LandmarkCard";
-import { Link } from "wouter";
+import { Link, useParams } from "react-router-dom";
 
 export interface WorldProps {
   worldId: string;
 }
+
+export const WorldContainer: FC = () => {
+  const { worldId } = useParams();
+
+  if (!worldId) {
+    return <Paper>World ID needed for world page</Paper>;
+  }
+
+  return <World worldId={worldId} />;
+};
 
 export const World: FC<WorldProps> = ({ worldId }) => {
   const { world, isLoading: isWorldLoading } = useWorld(worldId);
