@@ -1,33 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Redirect, Route, Router, useLocation } from "wouter";
+import { getBasePath } from "./config";
+import { AddLandmark, Home, SignIn, World } from "./pages";
+import { FC, useEffect, useState } from "react";
+import { AuthProvider } from "./hooks/auth";
+import { User } from "./api/User";
 
-export const App = () => {
-  const [count, setCount] = useState(0)
+export interface AppProps {
+  startingUser?: User;
+}
+
+export const App: FC<AppProps> = ({ startingUser }) => {
+  const basePath = getBasePath();
+  const [user, setUser] = useState<User | undefined>(startingUser);
+  const [_, navigate] = useLocation();
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("landmark-user", JSON.stringify(user));
+    }
+  }, [user]);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <AuthProvider value={user}>
+        <Router base={basePath}>
+          <Route path="/sign-in">
+            <SignIn
+              userChanged={(user) => {
+                setUser(user);
+                navigate("/");
+              }}
+            />
+          </Route>
+          <Route path="/world/:worldId/add_landmark">
+            {(params) => <AddLandmark worldId={params.worldId}></AddLandmark>}
+          </Route>
+          <Route path="/world/:worldId">
+            {(params) => <World worldId={params.worldId}></World>}
+          </Route>
+          <Route path="">{user ? <Home /> : <Redirect to="/sign-in" />}</Route>
+        </Router>
+      </AuthProvider>
     </>
-  )
-}
+  );
+};
