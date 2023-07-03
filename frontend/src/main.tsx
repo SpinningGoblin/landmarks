@@ -28,6 +28,8 @@ const queryClient = new QueryClient({
 
 const basePath = getBasePath();
 
+console.log(basePath);
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <HashRouter basename={basePath}>
