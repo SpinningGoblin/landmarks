@@ -3,6 +3,7 @@ use axum::{
     Router,
 };
 use landmarks::{config::app_state::AppState, persistence};
+use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
@@ -32,7 +33,8 @@ async fn main() {
             "/landmarks/:landmark_id",
             get(landmarks::api::handlers::landmark_by_id),
         )
-        .with_state(app_state);
+        .with_state(app_state)
+        .layer(CorsLayer::very_permissive());
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
