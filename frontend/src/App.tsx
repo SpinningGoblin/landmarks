@@ -1,4 +1,4 @@
-import { AddLandmark, Home, SignIn, World } from "./pages";
+import { AddLandmark, Home, SignIn } from "./pages";
 import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
@@ -12,7 +12,7 @@ export interface AppProps {
 export const App: FC<AppProps> = ({ startingUser }) => {
   const [user, setUser] = useState<User | undefined>(startingUser);
   const [worldId, setWorldId] = useState<string | undefined>();
-  const [isAddingLandmark, setIsAddingLandmark] = useState<boolean>();
+  const [isAddingLandmark, _] = useState<boolean>();
   const navigate = useNavigate();
 
   console.log("I'm here?");
