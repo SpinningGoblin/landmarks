@@ -1,14 +1,14 @@
 import { FC } from "react";
 import { WorldMetadata } from "../api/WorldMetadata";
-import { Button, Card, CardContent, Typography } from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
 import { bullet } from "./bullet";
+import { Link } from "react-router-dom";
 
 export interface WorldCardProps {
   world: WorldMetadata;
-  onClickWorld: (worldId: string) => void;
 }
 
-export const WorldCard: FC<WorldCardProps> = ({ world, onClickWorld }) => (
+export const WorldCard: FC<WorldCardProps> = ({ world }) => (
   <Card sx={{ minWidth: 275 }} variant="outlined">
     <CardContent>
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
@@ -18,7 +18,7 @@ export const WorldCard: FC<WorldCardProps> = ({ world, onClickWorld }) => (
         {bullet}
         Seed - {world.seed}
       </Typography>
-      <Button onClick={() => onClickWorld(world.id)}>View World</Button>
+      <Link to={`/worlds/${world.id}`}>View World</Link>
     </CardContent>
   </Card>
 );
