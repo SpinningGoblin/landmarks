@@ -2,6 +2,7 @@ import { AddLandmark, Home, SignIn, World } from "./pages";
 import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
+import { Route, Routes, useNavigate } from "react-router-dom";
 
 export interface AppProps {
   basePath: string;
@@ -12,6 +13,7 @@ export const App: FC<AppProps> = ({ startingUser }) => {
   const [user, setUser] = useState<User | undefined>(startingUser);
   const [worldId, setWorldId] = useState<string | undefined>();
   const [isAddingLandmark, setIsAddingLandmark] = useState<boolean>();
+  const navigate = useNavigate();
 
   console.log("I'm here?");
 
@@ -30,13 +32,17 @@ export const App: FC<AppProps> = ({ startingUser }) => {
           <SignIn
             userChanged={(user) => {
               setUser(user);
+              navigate("");
             }}
           />
         )}
         {signedIn && (
           <>
+            <Routes>
+              <Route path="" element={<Home onClickWorld={setWorldId} />} />
+            </Routes>
             {isAddingLandmark && worldId && <AddLandmark worldId={worldId} />}
-            {worldId ? (
+            {/* {worldId ? (
               <World
                 worldId={worldId}
                 onClickAddLandmark={() => setIsAddingLandmark(true)}
@@ -44,7 +50,7 @@ export const App: FC<AppProps> = ({ startingUser }) => {
               />
             ) : (
               <Home onClickWorld={setWorldId} />
-            )}
+            )} */}
           </>
         )}
       </AuthProvider>
