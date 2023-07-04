@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --base=/landmarks/",
+    "dev": "vite",
     "build": "tsc && vite build --base=/landmarks/",
     "lint": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prettier": "prettier --write src",
