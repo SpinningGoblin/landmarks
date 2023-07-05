@@ -13,8 +13,6 @@ export const App: FC<AppProps> = ({ startingUser }) => {
   const [user, setUser] = useState<User | undefined>(startingUser);
   const navigate = useNavigate();
 
-  console.log("I'm here?");
-
   useEffect(() => {
     if (user) {
       localStorage.setItem("landmark-user", JSON.stringify(user));
