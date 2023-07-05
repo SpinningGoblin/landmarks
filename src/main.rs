@@ -15,6 +15,11 @@ async fn main() {
         .unwrap();
     let app = Router::new()
         .route("/ping", get(landmarks::api::handlers::ping))
+        .route(
+            "/dimensions",
+            get(landmarks::api::handlers::list_dimensions),
+        )
+        .route("/biomes", get(landmarks::api::handlers::list_biomes))
         .route("/worlds", get(landmarks::api::handlers::worlds_for_user))
         .route("/worlds", post(landmarks::api::handlers::create_world))
         .route(

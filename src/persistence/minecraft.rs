@@ -1,9 +1,45 @@
-use neo4rs::query;
+use std::str::FromStr;
+
+use neo4rs::{query, Graph};
 use strum::IntoEnumIterator;
 
 use crate::minecraft::{Biome, Dimension, Platform};
 
-pub async fn ensure_minecraft_nodes(graph: &neo4rs::Graph) -> Result<(), anyhow::Error> {
+pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, anyhow::Error> {
+    let dimension_match = "MATCH (dimension:Dimension) RETURN dimension.name as dimension";
+
+    let mut result = graph.execute(query(&dimension_match)).await?;
+    let mut dimensions: Vec<Dimension> = Vec::new();
+
+    while let Ok(Some(row)) = result.next().await {
+        let value: String = row
+            .get("dimension")
+            .ok_or(anyhow::Error::msg("no_dimension_value"))?;
+
+        dimensions.push(Dimension::from_str(&value).unwrap());
+    }
+
+    Ok(dimensions)
+}
+
+pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, anyhow::Error> {
+    let dimension_match = "MATCH (biome:Biome) RETURN biome.name as biome";
+
+    let mut result = graph.execute(query(&dimension_match)).await?;
+    let mut biomes: Vec<Biome> = Vec::new();
+
+    while let Ok(Some(row)) = result.next().await {
+        let value: String = row
+            .get("biome")
+            .ok_or(anyhow::Error::msg("no_biome_value"))?;
+
+        biomes.push(Biome::from_str(&value).unwrap());
+    }
+
+    Ok(biomes)
+}
+
+pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), anyhow::Error> {
     let mut biome_merges: Vec<String> = Vec::new();
     let mut biome_returns: Vec<String> = Vec::new();
     Biome::iter().for_each(|biome| {
