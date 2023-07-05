@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "./auth";
-import { fetchLandmarks } from "../api/landmarks";
+import { addLandmark, fetchLandmarks } from "../api/landmarks";
+import { CreateLandmark } from "../api/CreateLandmark";
 
 export const useLandmarks = (worldId?: string) => {
   const { currentUser } = useUser();
@@ -13,4 +14,17 @@ export const useLandmarks = (worldId?: string) => {
   );
 
   return { landmarks, isLoading };
+};
+
+export const useAddLandmark = (worldId?: string) => {
+  const queryClient = useQueryClient();
+  const { currentUser } = useUser();
+
+  const mutation = useMutation({
+    mutationFn: (create: CreateLandmark) =>
+      addLandmark(create, worldId, currentUser),
+    onSuccess: () => queryClient.invalidateQueries(["landmarks", worldId]),
+  });
+
+  return { addLandmark: mutation };
 };
