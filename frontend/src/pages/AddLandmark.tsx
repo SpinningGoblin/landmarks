@@ -92,7 +92,7 @@ export const AddLandmark: FC = () => {
       {world && (
         <Paper>
           <Stack spacing={2}>
-            <Typography variant="h3">{world.name}</Typography>
+            <Typography variant="h4">Add Landmark to {world.name}</Typography>
             <Stack spacing={1}>
               <Typography variant="h5">New Landmark Details</Typography>
               <Stack
