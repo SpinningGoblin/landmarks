@@ -8,7 +8,7 @@ use crate::minecraft::{Biome, Dimension, Platform};
 pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, anyhow::Error> {
     let dimension_match = "MATCH (dimension:Dimension) RETURN dimension.name as dimension";
 
-    let mut result = graph.execute(query(&dimension_match)).await?;
+    let mut result = graph.execute(query(dimension_match)).await?;
     let mut dimensions: Vec<Dimension> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
@@ -23,9 +23,9 @@ pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, anyhow::Er
 }
 
 pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, anyhow::Error> {
-    let dimension_match = "MATCH (biome:Biome) RETURN biome.name as biome";
+    let biome_match = "MATCH (biome:Biome) RETURN biome.name as biome";
 
-    let mut result = graph.execute(query(&dimension_match)).await?;
+    let mut result = graph.execute(query(biome_match)).await?;
     let mut biomes: Vec<Biome> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
