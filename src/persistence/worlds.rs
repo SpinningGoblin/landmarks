@@ -27,7 +27,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
     let user_match = format!("MATCH (user:User {{ name: '{}' }})", user);
     let world_matches = r#"
         MATCH (user)-[:CREATED]->(world:World)
-        MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
+        OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
         RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
@@ -35,7 +35,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
     let shared_matches = r#"
         MATCH (user:User { name: 'derrick' })
         MATCH (world:World)-[:SHAREDWITH]->(user)
-        MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
+        OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
         OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared:User)
