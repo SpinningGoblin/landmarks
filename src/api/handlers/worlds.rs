@@ -25,22 +25,17 @@ pub async fn worlds_for_user(
     Ok(Json(worlds))
 }
 
-#[derive(Debug, Deserialize)]
-pub struct Create {
-    details: CreateWorld,
-}
-
 pub async fn create_world(
     State(app_state): State<AppState>,
     headers: HeaderMap,
-    Json(input): Json<Create>,
+    Json(input): Json<CreateWorld>,
 ) -> Result<String, (StatusCode, String)> {
     let Some(user) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
     let graph = app_state.to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
-    let id = persistence::worlds::create(&transaction, &user, &input.details)
+    let id = persistence::worlds::create(&transaction, &user, &input)
         .await
         .unwrap();
     transaction.commit().await.unwrap();
