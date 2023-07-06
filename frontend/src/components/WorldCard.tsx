@@ -12,12 +12,13 @@ export const WorldCard: FC<WorldCardProps> = ({ world }) => (
   <Card sx={{ minWidth: 275 }} variant="outlined">
     <CardContent>
       <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-        World - {world.name}
+        {world.name}
       </Typography>
       <Typography variant="h6" component="div">
         {bullet}
         Seed - {world.seed}
       </Typography>
+      <Typography variant="subtitle1">Saved by: {world.creator}</Typography>
       <Link to={`/worlds/${world.id}`}>View World</Link>
     </CardContent>
   </Card>
