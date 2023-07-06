@@ -16,14 +16,17 @@ export const useLandmarks = (worldId?: string) => {
   return { landmarks, isLoading };
 };
 
-export const useAddLandmark = (worldId?: string) => {
+export const useAddLandmark = (onSuccess: () => void, worldId?: string) => {
   const queryClient = useQueryClient();
   const { currentUser } = useUser();
 
   const mutation = useMutation({
     mutationFn: (create: CreateLandmark) =>
       addLandmark(create, worldId, currentUser),
-    onSuccess: () => queryClient.invalidateQueries(["landmarks", worldId]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["landmarks", worldId]);
+      onSuccess();
+    },
   });
 
   return { addLandmark: mutation };
