@@ -12,7 +12,7 @@ use crate::{
 fn world_match_query(world_id: &Uuid) -> Query {
     let world_match = format!(
         "MATCH (world:World {{ id: '{}' }}) RETURN world.id",
-        world_id.to_string()
+        world_id
     );
     query(&world_match)
 }
