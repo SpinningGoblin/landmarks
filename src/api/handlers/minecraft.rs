@@ -23,3 +23,14 @@ pub async fn list_biomes(
 
     Ok(Json(biomes))
 }
+
+pub async fn list_platforms(
+    State(app_state): State<AppState>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let graph = app_state.to_graph().await.unwrap();
+    let platforms = persistence::minecraft::list_platforms(&graph)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(platforms))
+}

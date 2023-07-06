@@ -39,6 +39,23 @@ pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, anyhow::Error> {
     Ok(biomes)
 }
 
+pub async fn list_platforms(graph: &Graph) -> Result<Vec<Platform>, anyhow::Error> {
+    let platform_match = "MATCH (platform:Platform) RETURN platform.name as platform";
+
+    let mut result = graph.execute(query(platform_match)).await?;
+    let mut platforms: Vec<Platform> = Vec::new();
+
+    while let Ok(Some(row)) = result.next().await {
+        let value: String = row
+            .get("platform")
+            .ok_or(anyhow::Error::msg("no_platform_value"))?;
+
+        platforms.push(Platform::from_str(&value).unwrap());
+    }
+
+    Ok(platforms)
+}
+
 pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), anyhow::Error> {
     let mut biome_merges: Vec<String> = Vec::new();
     let mut biome_returns: Vec<String> = Vec::new();

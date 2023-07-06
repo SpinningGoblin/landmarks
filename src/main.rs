@@ -20,6 +20,7 @@ async fn main() {
             get(landmarks::api::handlers::list_dimensions),
         )
         .route("/biomes", get(landmarks::api::handlers::list_biomes))
+        .route("/platforms", get(landmarks::api::handlers::list_platforms))
         .route("/worlds", get(landmarks::api::handlers::worlds_for_user))
         .route("/worlds", post(landmarks::api::handlers::create_world))
         .route(
