@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
 import { Route, Routes, useNavigate } from "react-router-dom";
+import { AddWorld } from "./pages/AddWorld";
 
 export interface AppProps {
   basePath: string;
@@ -39,7 +40,9 @@ export const App: FC<AppProps> = ({ startingUser }) => {
                 path="/worlds/:worldId/add_landmark"
                 element={<AddLandmark />}
               />
+              <Route path="/add_world" element={<AddWorld />} />
               <Route path="/worlds/:worldId" element={<World />} />
+              <Route path="/worlds" element={<Home />} />
               <Route path="" element={<Home />} />
             </Routes>
           </>
