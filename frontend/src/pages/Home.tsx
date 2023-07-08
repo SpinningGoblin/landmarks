@@ -15,9 +15,7 @@ export const Home: FC = () => {
           <Typography variant="h4">Worlds</Typography>
           <Link to={"/add_world"}>+ Add World</Link>
         </Stack>
-        {worlds?.map((world) => (
-          <WorldCard key={world.id} world={world} />
-        ))}
+        {worlds?.map((world) => <WorldCard key={world.id} world={world} />)}
       </Stack>
     </Container>
   );
