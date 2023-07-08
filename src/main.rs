@@ -63,6 +63,10 @@ async fn main() {
             "/landmarks/:landmark_id/remove_biome",
             post(landmarks::api::handlers::remove_biome_from_landmark),
         )
+        .route(
+            "/landmarks/:landmark_id/update_notes",
+            post(landmarks::api::handlers::update_notes_on_landmark),
+        )
         .with_state(app_state)
         .layer(CorsLayer::very_permissive());
 

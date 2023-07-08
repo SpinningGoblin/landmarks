@@ -125,6 +125,22 @@ pub async fn remove_farm(
     Ok(())
 }
 
+pub async fn update_notes(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    notes: &str,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let full_query = format!(
+        "{landmark_match}
+        SET landmark.notes = '{}'
+        RETURN landmark.id",
+        notes
+    );
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
 pub async fn create(
     transaction: &Txn,
     world_id: Uuid,
