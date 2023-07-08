@@ -9,6 +9,122 @@ use crate::{
     Tag,
 };
 
+pub async fn add_biome(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    biome: Biome,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let biome_merge = format!("MERGE (biome:Biome {{ name: '{}' }})", biome);
+    let biome_rel_merge = "MERGE (landmark)-[:HASBIOME]->(biome)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {biome_merge}
+        {biome_rel_merge}
+        RETURN landmark.id",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
+pub async fn remove_biome(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    biome: Biome,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let biome_match = format!("MATCH (biome:Biome {{ name: '{}' }})", biome);
+    let biome_rel_match = "MATCH (landmark)-[r:HASBIOME]->(biome)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {biome_match}
+        {biome_rel_match}
+        DELETE r",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
+pub async fn add_tag(transaction: &Txn, landmark_id: Uuid, tag: Tag) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let tag_merge = format!("MERGE (tag:Tag {{ name: '{}' }})", tag);
+    let tag_rel_merge = "MERGE (landmark)-[:HASTAG]->(tag)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {tag_merge}
+        {tag_rel_merge}
+        RETURN landmark.id",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
+pub async fn remove_tag(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    tag: Tag,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let tag_match = format!("MATCH (tag:Tag {{ name: '{}' }})", tag);
+    let tag_rel_match = "MATCH (landmark)-[r:HASTAG]->(tag)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {tag_match}
+        {tag_rel_match}
+        DELETE r",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
+pub async fn add_farm(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    farm: Farm,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let farm_merge = format!("MERGE (farm:Farm {{ name: '{}' }})", farm);
+    let farm_rel_merge = "MERGE (landmark)-[:HASFARM]->(farm)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {farm_merge}
+        {farm_rel_merge}
+        RETURN landmark.id",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
+pub async fn remove_farm(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    farm: Farm,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let farm_match = format!("MATCH (farm:Farm {{ name: '{}' }})", farm);
+    let farm_rel_match = "MATCH (landmark)-[r:HASFARM]->(farm)";
+
+    let full_query = format!(
+        "{landmark_match}
+        {farm_match}
+        {farm_rel_match}
+        DELETE r",
+    );
+
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
 pub async fn create(
     transaction: &Txn,
     world_id: Uuid,
@@ -24,7 +140,7 @@ pub async fn create(
     }
 
     let user_match = format!("MATCH (user:User {{ name: '{}' }})", user);
-    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id.to_string());
+    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
     let basic_position = format!(
         "x: {}, y: {}, z: {}",
         &create.coordinate.x, &create.coordinate.y, &create.coordinate.z
@@ -221,18 +337,12 @@ pub async fn landmark_by_id(
             let tag_values: Vec<String> = row
                 .get("tags")
                 .ok_or(anyhow::Error::msg("no_tags_column"))?;
-            let tags = tag_values
-                .into_iter()
-                .map(Tag)
-                .collect::<Vec<Tag>>();
+            let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
 
             let farm_values: Vec<String> = row
                 .get("farms")
                 .ok_or(anyhow::Error::msg("no_farms_column"))?;
-            let farms = farm_values
-                .into_iter()
-                .map(Farm)
-                .collect::<Vec<Farm>>();
+            let farms = farm_values.into_iter().map(Farm).collect::<Vec<Farm>>();
 
             let biome_values: Vec<String> = row
                 .get("biomes")

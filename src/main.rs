@@ -39,6 +39,30 @@ async fn main() {
             "/landmarks/:landmark_id",
             get(landmarks::api::handlers::landmark_by_id),
         )
+        .route(
+            "/landmarks/:landmark_id/add_farm",
+            post(landmarks::api::handlers::add_farm_to_landmark),
+        )
+        .route(
+            "/landmarks/:landmark_id/add_tag",
+            post(landmarks::api::handlers::add_tag_to_landmark),
+        )
+        .route(
+            "/landmarks/:landmark_id/remove_farm",
+            post(landmarks::api::handlers::remove_farm_from_landmark),
+        )
+        .route(
+            "/landmarks/:landmark_id/remove_tag",
+            post(landmarks::api::handlers::remove_tag_from_landmark),
+        )
+        .route(
+            "/landmarks/:landmark_id/add_biome",
+            post(landmarks::api::handlers::add_biome_to_landmark),
+        )
+        .route(
+            "/landmarks/:landmark_id/remove_biome",
+            post(landmarks::api::handlers::remove_biome_from_landmark),
+        )
         .with_state(app_state)
         .layer(CorsLayer::very_permissive());
 
