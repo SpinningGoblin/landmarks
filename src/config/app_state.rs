@@ -20,6 +20,10 @@ impl AppState {
         self.authentication.check(user, pass)
     }
 
+    pub fn check_admin(&self, token: &str) -> bool {
+        self.authentication.check_admin(token)
+    }
+
     pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
         self.connection.to_graph().await
     }
