@@ -7,7 +7,12 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{api::auth::check_auth, config::app_state::AppState, persistence, worlds::CreateWorld};
+use crate::{
+    api::auth::{check_admin, check_auth},
+    config::app_state::AppState,
+    persistence,
+    worlds::CreateWorld,
+};
 
 pub async fn worlds_for_user(
     State(app_state): State<AppState>,
@@ -23,6 +28,23 @@ pub async fn worlds_for_user(
         .unwrap();
 
     Ok(Json(worlds))
+}
+
+pub async fn world_export(
+    State(app_state): State<AppState>,
+    headers: HeaderMap,
+    Path(world_id): Path<Uuid>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if !check_admin(&headers, &app_state) {
+        return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
+    }
+
+    let graph = app_state.to_graph().await.unwrap();
+    let world = persistence::worlds::world_export_by_id(&graph, &world_id)
+        .await
+        .unwrap();
+
+    Ok(Json(world))
 }
 
 pub async fn create_world(

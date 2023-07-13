@@ -25,4 +25,4 @@ pub use remove_biome::RemoveBiome;
 pub use remove_farm::RemoveFarm;
 pub use remove_tag::RemoveTag;
 pub use update_notes::UpdateNotes;
-pub use worlds::{create_world, share_world, worlds_for_user};
+pub use worlds::{create_world, share_world, world_export, worlds_for_user};

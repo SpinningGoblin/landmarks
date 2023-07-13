@@ -36,6 +36,10 @@ async fn main() {
             get(landmarks::api::handlers::landmarks_for_world),
         )
         .route(
+            "/worlds/:world_id/export",
+            get(landmarks::api::handlers::world_export),
+        )
+        .route(
             "/landmarks/:landmark_id",
             get(landmarks::api::handlers::landmark_by_id),
         )
