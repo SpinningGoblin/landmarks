@@ -4,8 +4,9 @@ use neo4rs::{query, Graph, Node, Query, Txn};
 use uuid::Uuid;
 
 use crate::{
+    landmarks::Landmark,
     minecraft::{Platform, Seed},
-    worlds::{CreateWorld, WorldMetadata},
+    worlds::{CreateWorld, World, WorldMetadata},
     Tag,
 };
 
@@ -23,6 +24,85 @@ pub async fn check_world_exists(transaction: &Txn, world_id: &Uuid) -> Result<bo
     Ok(world_row.is_some())
 }
 
+pub async fn world_export_by_id(
+    graph: &Graph,
+    world_id: &Uuid,
+) -> Result<Option<World>, anyhow::Error> {
+    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
+    let detail_matches = r#"
+        OPTIONAL MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)
+        OPTIONAL MATCH (world)-[:HASTAG]->(tag:Tag)
+        MATCH (world)-[:ON]->(platform:Platform)
+        MATCH (world)-[:CREATEDBY]->(creator:User)
+        RETURN world, apoc.coll.toSet(collect(tag.name)) as tags, apoc.coll.toSet(collect(landmark.id)) as landmarks, platform.name as platform, creator.name as creator
+        "#;
+
+    let full_query = format!(
+        "{world_match}
+        {detail_matches}"
+    );
+
+    let mut world_result = graph.execute(query(&full_query)).await.unwrap();
+
+    match world_result.next().await {
+        Ok(Some(row)) => {
+            let world_node: Node = row
+                .get("world")
+                .ok_or(anyhow::Error::msg("no_world_node"))?;
+            let seed = world_node
+                .get("seed")
+                .map(Seed)
+                .ok_or(anyhow::Error::msg("no_world_seed"))?;
+            let name: Option<String> = world_node.get("name");
+            let notes: Option<String> = world_node.get("notes");
+            let id_value: String = world_node
+                .get("id")
+                .ok_or(anyhow::Error::msg("no_world_id"))?;
+            let id = Uuid::parse_str(&id_value)?;
+            let tag_values: Vec<String> = row
+                .get("tags")
+                .ok_or(anyhow::Error::msg("no_tags_column"))?;
+            let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
+
+            let platform_name: String = row
+                .get("platform")
+                .ok_or(anyhow::Error::msg("no_platform_name"))?;
+            let platform = Platform::from_str(&platform_name)?;
+
+            let creator: String = row.get("creator").ok_or(anyhow::Error::msg("no_creator"))?;
+            let landmark_ids: Vec<String> = row
+                .get("landmarks")
+                .ok_or(anyhow::Error::msg("no_landmarks_column"))?;
+
+            let mut landmarks: Vec<Landmark> = Vec::new();
+
+            for landmark_id in landmark_ids {
+                let id = Uuid::parse_str(&landmark_id).unwrap();
+                let landmark = super::landmarks::landmark_by_id(graph, &id)
+                    .await
+                    .unwrap()
+                    .unwrap();
+                landmarks.push(landmark);
+            }
+
+            Ok(Some(World {
+                metadata: WorldMetadata {
+                    id,
+                    seed,
+                    name,
+                    tags,
+                    platform,
+                    notes,
+                    creator,
+                },
+                landmarks,
+            }))
+        }
+        Ok(None) => Ok(None),
+        Err(e) => Err(anyhow::Error::new(e)),
+    }
+}
+
 pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata>, anyhow::Error> {
     let user_match = format!("MATCH (user:User {{ name: '{}' }})", user);
     let world_matches = r#"
@@ -33,12 +113,10 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
         "#;
     let shared_matches = r#"
-        MATCH (user:User { name: 'derrick' })
         MATCH (world:World)-[:SHAREDWITH]->(user)
         OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
-        OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared:User)
         RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
         "#;
     let full_query = format!(
