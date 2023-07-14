@@ -1,4 +1,5 @@
 pub mod api;
+pub mod backups;
 pub mod config;
 pub mod landmarks;
 pub mod minecraft;
