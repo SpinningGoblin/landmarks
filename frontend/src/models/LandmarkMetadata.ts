@@ -1,4 +1,4 @@
-import { Coordinate } from "./Coordinate";
+import { Coordinate } from "../models/Coordinate";
 import { Name } from "./Name";
 
 export interface LandmarkMetadata {

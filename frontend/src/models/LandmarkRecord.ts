@@ -1,5 +1,5 @@
-import { Coordinate } from "../api/Coordinate";
-import { Name } from "../api/Name";
+import { Coordinate } from "./Coordinate";
+import { Name } from "./Name";
 
 export interface LandmarkRecord {
   coordinate: Coordinate;

@@ -1,4 +1,4 @@
-import { Name } from "../api/Name";
+import { Name } from "./Name";
 import { EditingCoordinate } from "./EditingCoordinate";
 
 export interface EditingLandmark {

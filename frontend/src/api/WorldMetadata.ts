@@ -1,4 +1,4 @@
-import { Name } from "./Name";
+import { Name } from "../models/Name";
 import { Platform } from "./Platform";
 import { Seed } from "./Seed";
 import { Tag } from "./Tag";

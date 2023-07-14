@@ -1,5 +1,5 @@
-import { Coordinate } from "./Coordinate";
-import { Name } from "./Name";
+import { Coordinate } from "../models/Coordinate";
+import { Name } from "../models/Name";
 
 export interface CreateLandmark {
   coordinate: Coordinate;

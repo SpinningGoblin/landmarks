@@ -1,6 +1,6 @@
 import { getBackendUrl } from "../config";
 import { CreateLandmark } from "./CreateLandmark";
-import { LandmarkMetadata } from "./LandmarkMetadata";
+import { LandmarkMetadata } from "../models/LandmarkMetadata";
 import { User } from "./User";
 import { userHeaders } from "./headers";
 
