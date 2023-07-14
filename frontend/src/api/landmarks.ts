@@ -3,8 +3,28 @@ import { CreateLandmark } from "./CreateLandmark";
 import { LandmarkMetadata } from "../models/LandmarkMetadata";
 import { User } from "./User";
 import { userHeaders } from "./headers";
+import { Landmark } from "../models/Landmark";
 
 const serverUrl = getBackendUrl();
+
+export const fetchLandmark = async (
+  landmarkId?: string,
+  user?: User,
+): Promise<Landmark> => {
+  if (!user || !landmarkId) {
+    return Promise.reject(new Error("No landmark id or user"));
+  }
+
+  const response = await fetch(`${serverUrl}/landmarks/${landmarkId}`, {
+    headers: userHeaders(user),
+  });
+
+  if (response.ok) {
+    return response.json();
+  }
+
+  return Promise.reject(new Error(await response.text()));
+};
 
 export const addLandmark = async (
   create: CreateLandmark,
