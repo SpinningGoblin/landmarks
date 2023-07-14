@@ -7,7 +7,8 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    api::auth::check_auth, config::app_state::AppState, landmarks::CreateLandmark, persistence,
+    api::auth::check_auth, backups, config::app_state::AppState, landmarks::CreateLandmark,
+    persistence,
 };
 
 use super::{AddBiome, AddFarm, AddTag, RemoveBiome, RemoveFarm, RemoveTag, UpdateNotes};
@@ -63,6 +64,9 @@ pub async fn add_landmark_to_world(
         .await
         .unwrap();
     transaction.commit().await.unwrap();
+
+    backups::world::backup(&world_id, &graph, app_state).await;
+
     Ok(id.to_string())
 }
 
