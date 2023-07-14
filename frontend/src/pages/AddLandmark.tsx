@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigateToWorld, useWorld } from "../hooks/worlds";
-import { Paper, Stack, Typography } from "@mui/material";
+import { Container, Stack, Typography } from "@mui/material";
 import { useAddLandmark } from "../hooks/landmarks";
 import { LandmarkForm } from "../components/LandmarkForm";
 import { buildEmptyEditingLandmark } from "../models/EditingLandmark";
@@ -29,7 +29,7 @@ export const AddLandmark: FC = () => {
     <>
       {!world && <Typography>Unknown world ID</Typography>}
       {world && (
-        <Paper>
+        <Container>
           <Stack spacing={2}>
             <Typography variant="h5">Add Landmark to {world.name}</Typography>
             <LandmarkForm
@@ -38,7 +38,7 @@ export const AddLandmark: FC = () => {
               onFormSubmit={addLandmark.mutate}
             />
           </Stack>
-        </Paper>
+        </Container>
       )}
     </>
   );

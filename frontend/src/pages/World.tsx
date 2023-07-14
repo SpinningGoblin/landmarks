@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { useWorld } from "../hooks/worlds";
-import { Chip, Paper, Stack, Typography } from "@mui/material";
+import { Chip, Container, Stack, Typography } from "@mui/material";
 import { useLandmarks } from "../hooks/landmarks";
 import { LandmarkCard } from "../components/LandmarkCard";
 import { Link, useParams } from "react-router-dom";
@@ -11,7 +11,7 @@ export const World: FC = () => {
   const { landmarks, isLoading: isLandmarksLoading } = useLandmarks(worldId);
 
   return (
-    <Paper>
+    <Container>
       {(isWorldLoading || isLandmarksLoading) && (
         <Typography>Loading ...</Typography>
       )}
@@ -41,6 +41,6 @@ export const World: FC = () => {
           </Stack>
         </Stack>
       )}
-    </Paper>
+    </Container>
   );
 };
