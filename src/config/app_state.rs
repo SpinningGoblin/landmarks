@@ -1,11 +1,18 @@
+use aws_sdk_s3::Client;
 use neo4rs::Graph;
+use uuid::Uuid;
 
-use super::{auth::Authentication, neo4j::ConnectionConfig};
+use super::{
+    auth::Authentication, backup_plan::BackupPlan, blob_storage::AwsS3Storage,
+    neo4j::ConnectionConfig,
+};
 
 #[derive(Clone, Debug)]
 pub struct AppState {
     pub authentication: Authentication,
     pub connection: ConnectionConfig,
+    pub aws_storage: AwsS3Storage,
+    pub backup_plan: BackupPlan,
 }
 
 impl AppState {
@@ -13,6 +20,8 @@ impl AppState {
         Self {
             authentication: Authentication::load_from_env(),
             connection: ConnectionConfig::load_env().unwrap(),
+            aws_storage: AwsS3Storage::load_from_env().unwrap(),
+            backup_plan: BackupPlan::load_from_env(),
         }
     }
 
@@ -26,5 +35,13 @@ impl AppState {
 
     pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
         self.connection.to_graph().await
+    }
+
+    pub fn should_backup_world(&self, world_id: &Uuid) -> bool {
+        self.backup_plan.should_backup_world(world_id)
+    }
+
+    pub async fn aws_client(&self) -> Client {
+        self.aws_storage.client().await
     }
 }
