@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.71"
+aws-config = "0.55.3"
+aws-sdk-s3 = "0.28.0"
 axum = { git = "https://github.com/tokio-rs/axum.git", branch = "main" }
 neo4rs = { git = "https://github.com/neo4j-labs/neo4rs.git", rev = "29129fd32f1b9d90748fd3a3d7aa69278eb70d86" }
 serde = { version = "1.0.164", features = ["derive"] }
