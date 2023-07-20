@@ -2,7 +2,7 @@ import { getBackendUrl } from "../config";
 import { CreateWorld } from "./CreateWorld";
 import { User } from "./User";
 import { WorldMetadata } from "./WorldMetadata";
-import { userHeaders } from "./headers";
+import { request } from "./request";
 
 const serverUrl = getBackendUrl();
 
@@ -14,20 +14,14 @@ export const addWorld = async (
     return Promise.reject(new Error("No user"));
   }
 
-  const response = await fetch(`${serverUrl}/worlds`, {
-    headers: {
-      ...userHeaders(user),
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(create),
-  });
-
-  if (response.ok) {
-    return response.text();
-  }
-
-  return Promise.reject(new Error(await response.text()));
+  const url = `${serverUrl}/worlds`;
+  return request<CreateWorld, string>(
+    url,
+    "POST",
+    (response) => response.text(),
+    user,
+    create,
+  );
 };
 
 export const fetchWorlds = async (user?: User): Promise<WorldMetadata[]> => {
@@ -35,13 +29,11 @@ export const fetchWorlds = async (user?: User): Promise<WorldMetadata[]> => {
     return [];
   }
 
-  return fetch(`${serverUrl}/worlds`, {
-    headers: userHeaders(user),
-  }).then((response) => {
-    if (response.ok) {
-      return response.json();
-    }
-
-    return Promise.reject(new Error("world fetch failed"));
-  });
+  const url = `${serverUrl}/worlds`;
+  return request<unknown, WorldMetadata[]>(
+    url,
+    "GET",
+    (response) => response.json(),
+    user,
+  );
 };

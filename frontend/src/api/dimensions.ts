@@ -1,13 +1,10 @@
 import { getBackendUrl } from "../config";
+import { request } from "./request";
 
 const serverUrl = getBackendUrl();
 
 export const fetchDimensions = async (): Promise<string[]> => {
-  const response = await fetch(`${serverUrl}/dimensions`);
+  const url = `${serverUrl}/dimensions`;
 
-  if (response.ok) {
-    return response.json();
-  }
-
-  return Promise.reject(new Error("dimension fetch failed"));
+  return request<unknown, string[]>(url, "GET", (response) => response.json());
 };

@@ -2,8 +2,8 @@ import { getBackendUrl } from "../config";
 import { CreateLandmark } from "./CreateLandmark";
 import { LandmarkMetadata } from "../models/LandmarkMetadata";
 import { User } from "./User";
-import { userHeaders } from "./headers";
 import { Landmark } from "../models/Landmark";
+import { request } from "./request";
 
 const serverUrl = getBackendUrl();
 
@@ -15,15 +15,28 @@ export const fetchLandmark = async (
     return Promise.reject(new Error("No landmark id or user"));
   }
 
-  const response = await fetch(`${serverUrl}/landmarks/${landmarkId}`, {
-    headers: userHeaders(user),
-  });
+  const url = `${serverUrl}/landmarks/${landmarkId}`;
+  return request<unknown, Landmark>(
+    url,
+    "GET",
+    (response) => response.json(),
+    user,
+  );
+};
 
-  if (response.ok) {
-    return response.json();
+export const addBiome = async (
+  landmarkId?: string,
+  biome?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !biome || !user) {
+    return Promise.reject(new Error("Improper args"));
   }
 
-  return Promise.reject(new Error(await response.text()));
+  const url = `${serverUrl}/landmarks/${landmarkId}/add_biome`;
+  return request<unknown, void>(url, "GET", () => Promise.resolve(), user, {
+    biome,
+  });
 };
 
 export const addLandmark = async (
@@ -35,20 +48,15 @@ export const addLandmark = async (
     return Promise.reject(new Error("No world or user"));
   }
 
-  const response = await fetch(`${serverUrl}/worlds/${worldId}/landmarks`, {
-    headers: {
-      ...userHeaders(user),
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: JSON.stringify(create),
-  });
+  const url = `${serverUrl}/worlds/${worldId}/landmarks`;
 
-  if (response.ok) {
-    return response.text();
-  }
-
-  return Promise.reject(new Error(await response.text()));
+  return request<CreateLandmark, string>(
+    url,
+    "POST",
+    (response) => response.text(),
+    user,
+    create,
+  );
 };
 
 export const fetchLandmarks = async (
@@ -59,13 +67,11 @@ export const fetchLandmarks = async (
     return [];
   }
 
-  return fetch(`${serverUrl}/worlds/${worldId}/landmarks`, {
-    headers: userHeaders(user),
-  }).then((response) => {
-    if (response.ok) {
-      return response.json();
-    }
-
-    return Promise.reject(new Error("landmark fetch failed"));
-  });
+  const url = `${serverUrl}/worlds/${worldId}/landmarks`;
+  return request<unknown, LandmarkMetadata[]>(
+    url,
+    "GET",
+    (response) => response.json(),
+    user,
+  );
 };
