@@ -12,7 +12,7 @@ export const fetchLandmark = async (
   user?: User,
 ): Promise<Landmark> => {
   if (!user || !landmarkId) {
-    return Promise.reject(new Error("No landmark id or user"));
+    throw new Error("No landmark id or user");
   }
 
   const url = `${serverUrl}/landmarks/${landmarkId}`;
@@ -30,12 +30,87 @@ export const addBiome = async (
   user?: User,
 ): Promise<void> => {
   if (!landmarkId || !biome || !user) {
-    return Promise.reject(new Error("Improper args"));
+    throw new Error("Improper args");
   }
 
   const url = `${serverUrl}/landmarks/${landmarkId}/add_biome`;
-  return request<unknown, void>(url, "GET", () => Promise.resolve(), user, {
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
     biome,
+  });
+};
+
+export const addFarm = async (
+  landmarkId?: string,
+  farm?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !farm || !user) {
+    throw new Error("Improper args");
+  }
+
+  const url = `${serverUrl}/landmarks/${landmarkId}/add_farm`;
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
+    farm,
+  });
+};
+
+export const addTag = async (
+  landmarkId?: string,
+  tag?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !tag || !user) {
+    throw new Error("Improper args");
+  }
+
+  const url = `${serverUrl}/landmarks/${landmarkId}/add_tag`;
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
+    tag,
+  });
+};
+
+export const removeBiome = async (
+  landmarkId?: string,
+  biome?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !biome || !user) {
+    throw new Error("Improper args");
+  }
+
+  const url = `${serverUrl}/landmarks/${landmarkId}/remove_biome`;
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
+    biome,
+  });
+};
+
+export const removeFarm = async (
+  landmarkId?: string,
+  farm?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !farm || !user) {
+    throw new Error("Improper args");
+  }
+
+  const url = `${serverUrl}/landmarks/${landmarkId}/remove_farm`;
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
+    farm,
+  });
+};
+
+export const removeTag = async (
+  landmarkId?: string,
+  tag?: string,
+  user?: User,
+): Promise<void> => {
+  if (!landmarkId || !tag || !user) {
+    throw new Error("Improper args");
+  }
+
+  const url = `${serverUrl}/landmarks/${landmarkId}/remove_tag`;
+  return request<unknown, void>(url, "POST", () => Promise.resolve(), user, {
+    tag,
   });
 };
 
@@ -45,7 +120,7 @@ export const addLandmark = async (
   user?: User,
 ): Promise<string> => {
   if (!user || !worldId) {
-    return Promise.reject(new Error("No world or user"));
+    throw new Error("No world or user");
   }
 
   const url = `${serverUrl}/worlds/${worldId}/landmarks`;
