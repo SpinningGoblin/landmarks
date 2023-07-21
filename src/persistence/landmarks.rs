@@ -125,6 +125,35 @@ pub async fn remove_farm(
     Ok(())
 }
 
+pub async fn update_coordinate(
+    transaction: &Txn,
+    landmark_id: Uuid,
+    coordinate: &Coordinate,
+) -> Result<(), anyhow::Error> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let basic_position = format!(
+        "x: {}, y: {}, z: {}",
+        coordinate.x, coordinate.y, coordinate.z
+    );
+    // Putting the z into the y of the point because that's how distance would be measured in Minecraft.
+    let coordinate_2d = format!(
+        "coordinate_2d: point({{ x: {}, y: {}, crs: 'cartesian' }})",
+        coordinate.x, coordinate.z
+    );
+    // Putting the z into the y of the point because that's how distance would be measured in Minecraft.
+    let coordinate_3d = format!(
+        "coordinate_3d: point({{ x: {}, y: {}, z: {}, crs: 'cartesian-3D' }})",
+        coordinate.x, coordinate.y, coordinate.z
+    );
+    let full_query = format!(
+        "{landmark_match}
+        SET landmark += {{ {basic_position}, {coordinate_2d}, {coordinate_3d} }}
+        RETURN landmark.id"
+    );
+    transaction.run(query(&full_query)).await?;
+    Ok(())
+}
+
 pub async fn update_notes(
     transaction: &Txn,
     landmark_id: Uuid,

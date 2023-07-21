@@ -11,7 +11,9 @@ use crate::{
     persistence,
 };
 
-use super::{AddBiome, AddFarm, AddTag, RemoveBiome, RemoveFarm, RemoveTag, UpdateNotes};
+use super::{
+    AddBiome, AddFarm, AddTag, RemoveBiome, RemoveFarm, RemoveTag, UpdateCoordinate, UpdateNotes,
+};
 
 pub async fn landmarks_for_world(
     State(app_state): State<AppState>,
@@ -152,6 +154,32 @@ pub async fn update_notes_on_landmark(
     persistence::landmarks::update_notes(&transaction, landmark_id, &update_notes.notes)
         .await
         .unwrap();
+
+    transaction.commit().await.unwrap();
+
+    Ok("OK")
+}
+
+pub async fn update_coordinate_on_landmark(
+    State(app_state): State<AppState>,
+    headers: HeaderMap,
+    Path(landmark_id): Path<Uuid>,
+    Json(update_coordinate): Json<UpdateCoordinate>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let Some(_) = check_auth(&headers, &app_state) else {
+        return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
+    };
+
+    let graph = app_state.to_graph().await.unwrap();
+    let transaction = graph.start_txn().await.unwrap();
+
+    persistence::landmarks::update_coordinate(
+        &transaction,
+        landmark_id,
+        &update_coordinate.coordinate,
+    )
+    .await
+    .unwrap();
 
     transaction.commit().await.unwrap();
 

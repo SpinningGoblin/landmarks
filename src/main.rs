@@ -71,6 +71,10 @@ async fn main() {
             "/landmarks/:landmark_id/update_notes",
             post(landmarks::api::handlers::update_notes_on_landmark),
         )
+        .route(
+            "/landmarks/:landmark_id/update_coordinate",
+            post(landmarks::api::handlers::update_coordinate_on_landmark),
+        )
         .with_state(app_state)
         .layer(CorsLayer::very_permissive());
 
