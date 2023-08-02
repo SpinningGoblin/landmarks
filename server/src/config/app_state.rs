@@ -1,6 +1,7 @@
+use landmarks_core::config::neo4j::ConnectionConfig;
 use neo4rs::Graph;
 
-use super::{auth::Authentication, neo4j::ConnectionConfig};
+use super::auth::Authentication;
 
 #[derive(Clone, Debug)]
 pub struct AppState {
@@ -25,6 +26,9 @@ impl AppState {
     }
 
     pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
-        self.connection.to_graph().await
+        self.connection
+            .to_graph()
+            .await
+            .map_err(|e| anyhow::Error::new(e))
     }
 }

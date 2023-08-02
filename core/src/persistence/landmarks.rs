@@ -25,12 +25,7 @@ pub async fn add_biome(
         RETURN landmark.id",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -50,12 +45,7 @@ pub async fn remove_biome(
         DELETE r",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -71,12 +61,7 @@ pub async fn add_tag(transaction: &Txn, landmark_id: Uuid, tag: Tag) -> Result<(
         RETURN landmark.id",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -96,12 +81,7 @@ pub async fn remove_tag(
         DELETE r",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -121,12 +101,7 @@ pub async fn add_farm(
         RETURN landmark.id",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -146,12 +121,7 @@ pub async fn remove_farm(
         DELETE r",
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -180,12 +150,7 @@ pub async fn update_coordinate(
         SET landmark += {{ {basic_position}, {coordinate_2d}, {coordinate_3d} }}
         RETURN landmark.id"
     );
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -201,12 +166,7 @@ pub async fn update_notes(
         RETURN landmark.id",
         notes
     );
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
     Ok(())
 }
 
@@ -333,12 +293,7 @@ pub async fn create(
         RETURN landmark.id"
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
 
     Ok(id)
 }
@@ -355,24 +310,23 @@ pub async fn landmarks_for_world(
         RETURN landmark"
     );
 
-    let mut result =
-        graph
-            .execute(query(&full_query))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut result = graph.execute(query(&full_query)).await?;
     let mut landmarks: Vec<LandmarkMetadata> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let landmark_node: Node = row.get("landmark").ok_or(LandmarksError::GraphError {
-            message: "no_landmark_node".to_string(),
-        })?;
+        let landmark_node: Node =
+            row.get("landmark")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_landmark_node".to_string(),
+                })?;
         let name: String = landmark_node.get("name").unwrap_or_default();
         let notes: Option<String> = landmark_node.get("notes");
-        let id_value: String = landmark_node.get("id").ok_or(LandmarksError::GraphError {
-            message: "no_landmark_id".to_string(),
-        })?;
+        let id_value: String =
+            landmark_node
+                .get("id")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_landmark_id".to_string(),
+                })?;
         let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
             message: e.to_string(),
         })?;
@@ -419,14 +373,19 @@ pub async fn landmark_by_id(
 
     match result.next().await {
         Ok(Some(row)) => {
-            let landmark_node: Node = row.get("landmark").ok_or(LandmarksError::GraphError {
-                message: "no_landmark_node".to_string(),
-            })?;
+            let landmark_node: Node =
+                row.get("landmark")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_landmark_node".to_string(),
+                    })?;
             let name: String = landmark_node.get("name").unwrap_or_default();
             let notes: Option<String> = landmark_node.get("notes");
-            let id_value: String = landmark_node.get("id").ok_or(LandmarksError::GraphError {
-                message: "no_landmark_id".to_string(),
-            })?;
+            let id_value: String =
+                landmark_node
+                    .get("id")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_landmark_id".to_string(),
+                    })?;
             let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
                 message: e.to_string(),
             })?;
@@ -434,29 +393,35 @@ pub async fn landmark_by_id(
             let y: i64 = landmark_node.get("y").unwrap();
             let z: i64 = landmark_node.get("z").unwrap();
 
-            let tag_values: Vec<String> = row.get("tags").ok_or(LandmarksError::GraphError {
-                message: "no_tags_column".to_string(),
-            })?;
+            let tag_values: Vec<String> =
+                row.get("tags")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_tags_column".to_string(),
+                    })?;
             let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
 
-            let farm_values: Vec<String> = row.get("farms").ok_or(LandmarksError::GraphError {
-                message: "no_farms_column".to_string(),
-            })?;
+            let farm_values: Vec<String> =
+                row.get("farms")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_farms_column".to_string(),
+                    })?;
             let farms = farm_values.into_iter().map(Farm).collect::<Vec<Farm>>();
 
             let biome_values: Vec<String> =
-                row.get("biomes").ok_or(LandmarksError::GraphError {
-                    message: "no_biomes_column".to_string(),
-                })?;
+                row.get("biomes")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_biomes_column".to_string(),
+                    })?;
             let biomes = biome_values
                 .into_iter()
                 .map(|name| Biome::from_str(&name).unwrap())
                 .collect::<Vec<Biome>>();
 
             let dimension_value: String =
-                row.get("dimension").ok_or(LandmarksError::GraphError {
-                    message: "no_dimension_column".to_string(),
-                })?;
+                row.get("dimension")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_dimension_column".to_string(),
+                    })?;
             let dimension = Dimension::from_str(&dimension_value).unwrap();
 
             Ok(Some(Landmark {
@@ -473,8 +438,6 @@ pub async fn landmark_by_id(
             }))
         }
         Ok(None) => Ok(None),
-        Err(e) => Err(LandmarksError::GraphError {
-            message: e.to_string(),
-        }),
+        Err(e) => Err(LandmarksError::from(e)),
     }
 }

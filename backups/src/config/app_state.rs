@@ -1,8 +1,9 @@
 use aws_sdk_s3::Client;
+use landmarks_core::config::neo4j::ConnectionConfig;
 use neo4rs::Graph;
 use uuid::Uuid;
 
-use super::{backup_plan::BackupPlan, blob_storage::AwsS3Storage, neo4j::ConnectionConfig};
+use super::{backup_plan::BackupPlan, blob_storage::AwsS3Storage};
 
 #[derive(Clone, Debug)]
 pub struct AppState {
@@ -25,7 +26,10 @@ impl AppState {
     }
 
     pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
-        self.connection.to_graph().await
+        self.connection
+            .to_graph()
+            .await
+            .map_err(|e| anyhow::Error::new(e))
     }
 
     pub async fn aws_client(&self) -> Client {

@@ -24,18 +24,8 @@ pub async fn check_world_exists(
     transaction: &Txn,
     world_id: &Uuid,
 ) -> Result<bool, LandmarksError> {
-    let mut result = transaction
-        .execute(world_match_query(world_id))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
-    let world_row = result
-        .next()
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    let mut result = transaction.execute(world_match_query(world_id)).await?;
+    let world_row = result.next().await?;
     Ok(world_row.is_some())
 }
 
@@ -57,50 +47,55 @@ pub async fn world_export_by_id(
         {detail_matches}"
     );
 
-    let mut world_result =
-        graph
-            .execute(query(&full_query))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut world_result = graph.execute(query(&full_query)).await?;
 
     match world_result.next().await {
         Ok(Some(row)) => {
-            let world_node: Node = row.get("world").ok_or(LandmarksError::GraphError {
-                message: "no_world_node".to_string(),
-            })?;
-            let seed = world_node
-                .get("seed")
-                .map(Seed)
-                .ok_or(LandmarksError::GraphError {
+            let world_node: Node =
+                row.get("world")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_world_node".to_string(),
+                    })?;
+            let seed = world_node.get("seed").map(Seed).ok_or(
+                LandmarksError::GraphDeserializationError {
                     message: "no_world_seed".to_string(),
-                })?;
+                },
+            )?;
             let name: Option<String> = world_node.get("name");
             let notes: Option<String> = world_node.get("notes");
-            let id_value: String = world_node.get("id").ok_or(LandmarksError::GraphError {
-                message: "no_world_id".to_string(),
-            })?;
+            let id_value: String =
+                world_node
+                    .get("id")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_world_id".to_string(),
+                    })?;
             let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
                 message: e.to_string(),
             })?;
-            let tag_values: Vec<String> = row.get("tags").ok_or(LandmarksError::GraphError {
-                message: "no_tags_column".to_string(),
-            })?;
+            let tag_values: Vec<String> =
+                row.get("tags")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_tags_column".to_string(),
+                    })?;
             let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
 
-            let platform_name: String = row.get("platform").ok_or(LandmarksError::GraphError {
-                message: "no_platform_column".to_string(),
-            })?;
+            let platform_name: String =
+                row.get("platform")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_platform_column".to_string(),
+                    })?;
             let platform = Platform::from_str(&platform_name)?;
 
-            let creator: String = row.get("creator").ok_or(LandmarksError::GraphError {
-                message: "no_creator_column".to_string(),
-            })?;
+            let creator: String =
+                row.get("creator")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_creator_column".to_string(),
+                    })?;
             let landmark_ids: Vec<String> =
-                row.get("landmarks").ok_or(LandmarksError::GraphError {
-                    message: "no_landmarks_column".to_string(),
-                })?;
+                row.get("landmarks")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_landmarks_column".to_string(),
+                    })?;
 
             let mut landmarks: Vec<Landmark> = Vec::new();
 
@@ -127,9 +122,7 @@ pub async fn world_export_by_id(
             }))
         }
         Ok(None) => Ok(None),
-        Err(e) => Err(LandmarksError::GraphError {
-            message: e.to_string(),
-        }),
+        Err(e) => Err(LandmarksError::from(e)),
     }
 }
 
@@ -157,46 +150,52 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         {shared_matches}"
     );
 
-    let mut result =
-        graph
-            .execute(query(&full_query))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut result = graph.execute(query(&full_query)).await?;
     let mut worlds: Vec<WorldMetadata> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let world_node: Node = row.get("world").ok_or(LandmarksError::GraphError {
-            message: "no_world_node".to_string(),
-        })?;
-        let seed = world_node
-            .get("seed")
-            .map(Seed)
-            .ok_or(LandmarksError::GraphError {
-                message: "no_world_seed".to_string(),
-            })?;
+        let world_node: Node =
+            row.get("world")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_world_node".to_string(),
+                })?;
+        let seed =
+            world_node
+                .get("seed")
+                .map(Seed)
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_world_seed".to_string(),
+                })?;
         let name: Option<String> = world_node.get("name");
         let notes: Option<String> = world_node.get("notes");
-        let id_value: String = world_node.get("id").ok_or(LandmarksError::GraphError {
-            message: "no_world_id".to_string(),
-        })?;
+        let id_value: String =
+            world_node
+                .get("id")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_world_id".to_string(),
+                })?;
         let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
             message: e.to_string(),
         })?;
-        let tag_values: Vec<String> = row.get("tags").ok_or(LandmarksError::GraphError {
-            message: "no_tags_column".to_string(),
-        })?;
+        let tag_values: Vec<String> =
+            row.get("tags")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_tags_column".to_string(),
+                })?;
         let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
 
-        let platform_name: String = row.get("platform").ok_or(LandmarksError::GraphError {
-            message: "no_platform_column".to_string(),
-        })?;
+        let platform_name: String =
+            row.get("platform")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_platform_column".to_string(),
+                })?;
         let platform = Platform::from_str(&platform_name)?;
 
-        let creator: String = row.get("creator").ok_or(LandmarksError::GraphError {
-            message: "no_world_creator".to_string(),
-        })?;
+        let creator: String =
+            row.get("creator")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_world_creator".to_string(),
+                })?;
 
         worlds.push(WorldMetadata {
             id,
@@ -263,12 +262,7 @@ pub async fn create(
         RETURN world.id"
     );
 
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
 
     Ok(world_id)
 }
@@ -292,12 +286,7 @@ pub async fn share_world(
             {merge_query}
             RETURN target.name"
     );
-    transaction
-        .run(query(&full_query))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+    transaction.run(query(&full_query)).await?;
 
     Ok(())
 }

@@ -11,19 +11,15 @@ use crate::{
 pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, LandmarksError> {
     let dimension_match = "MATCH (dimension:Dimension) RETURN dimension.name as dimension";
 
-    let mut result =
-        graph
-            .execute(query(dimension_match))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut result = graph.execute(query(dimension_match)).await?;
     let mut dimensions: Vec<Dimension> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String = row.get("dimension").ok_or(LandmarksError::GraphError {
-            message: "no_dimension_value".to_string(),
-        })?;
+        let value: String =
+            row.get("dimension")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_dimension_value".to_string(),
+                })?;
 
         dimensions.push(Dimension::from_str(&value).unwrap());
     }
@@ -34,19 +30,15 @@ pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, LandmarksE
 pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, LandmarksError> {
     let biome_match = "MATCH (biome:Biome) RETURN biome.name as biome";
 
-    let mut result =
-        graph
-            .execute(query(biome_match))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut result = graph.execute(query(biome_match)).await?;
     let mut biomes: Vec<Biome> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String = row.get("biome").ok_or(LandmarksError::GraphError {
-            message: "no_biome_value".to_string(),
-        })?;
+        let value: String = row
+            .get("biome")
+            .ok_or(LandmarksError::GraphDeserializationError {
+                message: "no_biome_value".to_string(),
+            })?;
 
         biomes.push(Biome::from_str(&value).unwrap());
     }
@@ -57,19 +49,15 @@ pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, LandmarksError> {
 pub async fn list_platforms(graph: &Graph) -> Result<Vec<Platform>, LandmarksError> {
     let platform_match = "MATCH (platform:Platform) RETURN platform.name as platform";
 
-    let mut result =
-        graph
-            .execute(query(platform_match))
-            .await
-            .map_err(|e| LandmarksError::GraphError {
-                message: e.to_string(),
-            })?;
+    let mut result = graph.execute(query(platform_match)).await?;
     let mut platforms: Vec<Platform> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String = row.get("platform").ok_or(LandmarksError::GraphError {
-            message: "no_platform_value".to_string(),
-        })?;
+        let value: String =
+            row.get("platform")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_platform_value".to_string(),
+                })?;
 
         platforms.push(Platform::from_str(&value).unwrap());
     }
@@ -184,10 +172,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
             biome_merges.join("\n"),
             biome_returns.join(",")
         )))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+        .await?;
 
     graph
         .run(query(&format!(
@@ -195,10 +180,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
             dimension_merges.join("\n"),
             dimension_returns.join(",")
         )))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+        .await?;
 
     graph
         .run(query(&format!(
@@ -206,10 +188,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
             platform_merges.join("\n"),
             platform_returns.join(",")
         )))
-        .await
-        .map_err(|e| LandmarksError::GraphError {
-            message: e.to_string(),
-        })?;
+        .await?;
 
     Ok(())
 }
