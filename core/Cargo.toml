@@ -1,0 +1,17 @@
+[package]
+name = "landmarks_core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+neo4rs = { git = "https://github.com/neo4j-labs/neo4rs.git", rev = "29129fd32f1b9d90748fd3a3d7aa69278eb70d86" }
+serde = { version = "1.0", features = ["derive"] }
+strum = "0.25"
+strum_macros = "0.25"
+thiserror = "1.0"
+uuid = { version = "1.4", features = ["v4", "serde", "fast-rng"] }
+
+[dev-dependencies]
+serde_json = "1.0.99"
