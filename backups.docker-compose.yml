@@ -1,0 +1,15 @@
+version: '3'
+
+name: backups
+
+services:
+  app:
+    build:
+      dockerfile: backups.Dockerfile
+    environment:
+      NEO4J_PASSWORD: $NEO4J_PASSWORD
+      NEO4J_CONNECTION_URI: $NEO4J_CONNECTION_URI
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_REGION: $AWS_REGION
+      BACKUP_WORLD_ID: $BACKUP_WORLD_ID

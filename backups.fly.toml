@@ -1,0 +1,15 @@
+# fly.toml app configuration file generated for landmarks on 2023-06-28T21:28:39-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "landmarks-backup"
+primary_region = "sea"
+
+[build]
+dockerfile = "backups.Dockerfile"
+
+[[services]]
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
