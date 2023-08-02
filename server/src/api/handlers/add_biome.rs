@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::minecraft::Biome;
+use landmarks_core::minecraft::Biome;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AddBiome {

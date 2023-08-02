@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::minecraft::Coordinate;
+use landmarks_core::minecraft::Coordinate;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct UpdateCoordinate {

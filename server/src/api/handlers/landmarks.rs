@@ -4,12 +4,10 @@ use axum::{
     response::IntoResponse,
     Json,
 };
+use landmarks_core::{landmarks::CreateLandmark, persistence};
 use uuid::Uuid;
 
-use crate::{
-    api::auth::check_auth, backups, config::app_state::AppState, landmarks::CreateLandmark,
-    persistence,
-};
+use crate::{api::auth::check_auth, config::app_state::AppState};
 
 use super::{
     AddBiome, AddFarm, AddTag, RemoveBiome, RemoveFarm, RemoveTag, UpdateCoordinate, UpdateNotes,
@@ -66,8 +64,6 @@ pub async fn add_landmark_to_world(
         .await
         .unwrap();
     transaction.commit().await.unwrap();
-
-    backups::world::backup(&world_id, &graph, app_state).await;
 
     Ok(id.to_string())
 }

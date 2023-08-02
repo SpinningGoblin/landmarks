@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::Tag;
+use landmarks_core::Tag;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct RemoveTag {

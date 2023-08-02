@@ -2,15 +2,17 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use landmarks::{config::app_state::AppState, persistence};
+use landmarks::config::app_state::AppState;
 use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
+    println!("running the server");
+
     let app_state = AppState::load_from_env();
     let graph = app_state.to_graph().await.unwrap();
 
-    persistence::minecraft::ensure_minecraft_nodes(&graph)
+    landmarks_core::persistence::minecraft::ensure_minecraft_nodes(&graph)
         .await
         .unwrap();
     let app = Router::new()

@@ -1,6 +1,7 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use landmarks_core::persistence;
 
-use crate::{config::app_state::AppState, persistence};
+use crate::config::app_state::AppState;
 
 pub async fn list_dimensions(
     State(app_state): State<AppState>,
