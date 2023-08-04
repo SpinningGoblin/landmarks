@@ -5,6 +5,7 @@ pub mod minecraft;
 pub mod persistence;
 mod string_visitor;
 mod tag;
+pub mod users;
 pub mod worlds;
 
 pub use error::LandmarksError;
