@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "./auth";
-import { addWorld, fetchWorlds } from "../api/worlds";
+import { addWorld, fetchWorlds, shareWorldWithUser } from "../api/worlds";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateWorld } from "../api/CreateWorld";
@@ -57,4 +57,22 @@ export const useAddWorld = (onSuccess: (newId: string) => void) => {
   });
 
   return { addWorld: mutation };
+};
+
+export type ShareWorldArgs = {
+  user: string;
+  worldId: string;
+};
+
+export const useShareWorld = () => {
+  const queryClient = useQueryClient();
+  const { currentUser } = useUser();
+
+  const mutation = useMutation({
+    mutationFn: (args: ShareWorldArgs) =>
+      shareWorldWithUser({ user: args.user }, args.worldId, currentUser),
+    onSuccess: () => queryClient.invalidateQueries(["worlds"]),
+  });
+
+  return { shareWorld: mutation };
 };

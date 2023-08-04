@@ -1,5 +1,6 @@
 import { getBackendUrl } from "../config";
 import { CreateWorld } from "./CreateWorld";
+import { ShareWorld } from "./ShareWorld";
 import { User } from "./User";
 import { WorldMetadata } from "./WorldMetadata";
 import { request } from "./request";
@@ -11,7 +12,7 @@ export const addWorld = async (
   user?: User,
 ): Promise<string> => {
   if (!user) {
-    return Promise.reject(new Error("No user"));
+    throw new Error("No user");
   }
 
   const url = `${serverUrl}/worlds`;
@@ -21,6 +22,25 @@ export const addWorld = async (
     (response) => response.text(),
     user,
     create,
+  );
+};
+
+export const shareWorldWithUser = async (
+  share: ShareWorld,
+  worldId: string,
+  user?: User,
+): Promise<string> => {
+  if (!user) {
+    throw new Error("No user");
+  }
+
+  const url = `${serverUrl}/worlds/${worldId}/share`;
+  return request<ShareWorld, string>(
+    url,
+    "POST",
+    (response) => response.text(),
+    user,
+    share,
   );
 };
 

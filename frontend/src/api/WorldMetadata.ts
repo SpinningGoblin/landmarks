@@ -1,6 +1,7 @@
 import { Name } from "../models/Name";
 import { Platform } from "./Platform";
 import { Seed } from "./Seed";
+import { SlimUser } from "./SlimUser";
 import { Tag } from "./Tag";
 
 export interface WorldMetadata {
@@ -10,5 +11,6 @@ export interface WorldMetadata {
   tags: Tag[];
   platform: Platform;
   notes?: string;
-  creator: string;
+  creator: SlimUser;
+  shared_users: SlimUser[];
 }

@@ -1,10 +1,16 @@
-import { AddLandmark, Home, SignIn, World } from "./pages";
+import {
+  AddLandmark,
+  AddWorld,
+  Home,
+  Landmark,
+  ShareWorld,
+  SignIn,
+  World,
+} from "./pages";
 import { FC, useEffect, useState } from "react";
 import { AuthProvider } from "./hooks/auth";
 import { User } from "./api/User";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { AddWorld } from "./pages/AddWorld";
-import { Landmark } from "./pages/Landmark";
 
 export interface AppProps {
   basePath: string;
@@ -42,6 +48,7 @@ export const App: FC<AppProps> = ({ startingUser }) => {
                 element={<AddLandmark />}
               />
               <Route path="/add_world" element={<AddWorld />} />
+              <Route path="/worlds/:worldId/share" element={<ShareWorld />} />
               <Route path="/worlds/:worldId" element={<World />} />
               <Route path="/landmarks/:landmarkId" element={<Landmark />} />
               <Route path="/worlds" element={<Home />} />
