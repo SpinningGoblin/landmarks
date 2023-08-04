@@ -8,7 +8,7 @@ use crate::config::AppState;
 pub mod config;
 mod save_world;
 
-const MINUTE_WAIT: u64 = 5;
+const MINUTE_WAIT: u64 = 60;
 
 #[tokio::main]
 async fn main() {
