@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     minecraft::{Platform, Seed},
+    users::User,
     LandmarksError, Tag,
 };
 use neo4rs::{query, Graph, Node, Query, Txn};
@@ -37,9 +38,15 @@ pub async fn world_export_by_id(
     let detail_matches = r#"
         OPTIONAL MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)
         OPTIONAL MATCH (world)-[:HASTAG]->(tag:Tag)
+        OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared_user:User)
         MATCH (world)-[:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
-        RETURN world, apoc.coll.toSet(collect(tag.name)) as tags, apoc.coll.toSet(collect(landmark.id)) as landmarks, platform.name as platform, creator.name as creator
+        RETURN world,
+        apoc.coll.toSet(collect(tag.name)) as tags,
+        apoc.coll.toSet(collect(landmark.id)) as landmarks,
+        apoc.coll.toSet(collect(shared_user.name)) as shared_users,
+        platform.name as platform,
+        creator.name as creator
         "#;
 
     let full_query = format!(
@@ -108,6 +115,16 @@ pub async fn world_export_by_id(
                 landmarks.push(landmark);
             }
 
+            let shared_name_values: Vec<String> =
+                row.get("shared_users")
+                    .ok_or(LandmarksError::GraphDeserializationError {
+                        message: "no_shared_users_column".to_string(),
+                    })?;
+            let shared_users = shared_name_values
+                .into_iter()
+                .map(|name| User { name })
+                .collect::<Vec<User>>();
+
             Ok(Some(World {
                 metadata: WorldMetadata {
                     id,
@@ -116,7 +133,8 @@ pub async fn world_export_by_id(
                     tags,
                     platform,
                     notes,
-                    creator,
+                    creator: User { name: creator },
+                    shared_users,
                 },
                 landmarks,
             }))
@@ -133,14 +151,24 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
-        RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
+        OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared_user:User)
+        RETURN world,
+        apoc.coll.toSet(collect(tag.name)) as tags,
+        apoc.coll.toSet(collect(shared_user.name)) as shared_users,
+        platform.name as platform,
+        creator.name as creator
         "#;
     let shared_matches = r#"
         MATCH (world:World)-[:SHAREDWITH]->(user)
         OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
         MATCH (world)-[:CREATEDBY]->(creator:User)
-        RETURN world, COLLECT(tag.name) as tags, platform.name as platform, creator.name as creator
+        OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared_user:User)
+        RETURN world,
+        apoc.coll.toSet(collect(tag.name)) as tags,
+        apoc.coll.toSet(collect(shared_user.name)) as shared_users,
+        platform.name as platform,
+        creator.name as creator
         "#;
     let full_query = format!(
         "{user_match}
@@ -197,6 +225,16 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
                     message: "no_world_creator".to_string(),
                 })?;
 
+        let shared_name_values: Vec<String> =
+            row.get("shared_users")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_shared_users_column".to_string(),
+                })?;
+        let shared_users = shared_name_values
+            .into_iter()
+            .map(|name| User { name })
+            .collect::<Vec<User>>();
+
         worlds.push(WorldMetadata {
             id,
             seed,
@@ -204,7 +242,8 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
             notes,
             tags,
             platform,
-            creator,
+            creator: User { name: creator },
+            shared_users,
         });
     }
 

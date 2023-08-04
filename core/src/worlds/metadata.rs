@@ -1,5 +1,6 @@
 use crate::{
     minecraft::{Platform, Seed},
+    users::User,
     Tag,
 };
 use serde::{Deserialize, Serialize};
@@ -16,5 +17,6 @@ pub struct WorldMetadata {
     pub platform: Platform,
     #[serde(default)]
     pub notes: Option<String>,
-    pub creator: String,
+    pub creator: User,
+    pub shared_users: Vec<User>,
 }
