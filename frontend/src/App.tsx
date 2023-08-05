@@ -50,7 +50,10 @@ export const App: FC<AppProps> = ({ startingUser }) => {
               <Route path="/add_world" element={<AddWorld />} />
               <Route path="/worlds/:worldId/share" element={<ShareWorld />} />
               <Route path="/worlds/:worldId" element={<World />} />
-              <Route path="/landmarks/:landmarkId" element={<Landmark />} />
+              <Route
+                path="worlds/:worldId/landmarks/:landmarkId"
+                element={<Landmark />}
+              />
               <Route path="/worlds" element={<Home />} />
               <Route path="" element={<Home />} />
             </Routes>

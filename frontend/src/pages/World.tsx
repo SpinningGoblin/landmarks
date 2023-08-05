@@ -34,9 +34,14 @@ export const World: FC = () => {
               <Link to={`/worlds/${worldId}/add_landmark`}>+ Add Landmark</Link>
             </Stack>
             <Stack spacing={2}>
-              {landmarks?.map((landmark) => (
-                <LandmarkCard key={landmark.id} landmark={landmark} />
-              ))}
+              {worldId &&
+                landmarks?.map((landmark) => (
+                  <LandmarkCard
+                    key={landmark.id}
+                    landmark={landmark}
+                    worldId={worldId}
+                  />
+                ))}
             </Stack>
           </Stack>
         </Stack>

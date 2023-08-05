@@ -6,9 +6,10 @@ import { Coordinate } from "./Coordinate";
 
 export interface LandmarkCardProps {
   landmark: LandmarkMetadata;
+  worldId: string;
 }
 
-export const LandmarkCard: FC<LandmarkCardProps> = ({ landmark }) => (
+export const LandmarkCard: FC<LandmarkCardProps> = ({ landmark, worldId }) => (
   <Card sx={{ minWidth: 275 }} variant="outlined">
     <CardContent>
       <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -18,7 +19,9 @@ export const LandmarkCard: FC<LandmarkCardProps> = ({ landmark }) => (
         <Typography variant="subtitle1" component="div">
           <Coordinate coordinate={landmark.coordinate} />
         </Typography>
-        <Link to={`/landmarks/${landmark.id}`}>View Landmark</Link>
+        <Link to={`/worlds/${worldId}/landmarks/${landmark.id}`}>
+          View Landmark
+        </Link>
       </Stack>
     </CardContent>
   </Card>

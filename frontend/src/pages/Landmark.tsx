@@ -5,6 +5,7 @@ import {
   useAddFarm,
   useAddTag,
   useLandmark,
+  useLandmarks,
   useRemoveBiome,
   useRemoveFarm,
   useRemoveTag,
@@ -25,7 +26,7 @@ import { Coordinate } from "../components/Coordinate";
 import { useBiomes } from "../hooks/minecraft";
 
 export const Landmark: FC = () => {
-  const { landmarkId } = useParams();
+  const { worldId, landmarkId } = useParams();
   const [newBiome, setNewBiome] = useState("");
   const addBiomeCallback = useCallback(() => {
     setNewBiome("");
@@ -41,7 +42,7 @@ export const Landmark: FC = () => {
   }, [setNewTag]);
 
   const { biomes } = useBiomes();
-
+  const { landmarks } = useLandmarks(worldId);
   const { landmark, isLoading } = useLandmark(landmarkId);
   const { removeFarm } = useRemoveFarm(landmarkId);
   const { addFarm } = useAddFarm(addFarmCallback, landmarkId);
@@ -53,6 +54,8 @@ export const Landmark: FC = () => {
   const farmsSaving = removeFarm.isLoading || addFarm.isLoading;
   const biomesSaving = removeBiome.isLoading || addBiome.isLoading;
   const tagsSaving = removeTag.isLoading || addTag.isLoading;
+
+  console.log((landmarks ?? []).filter((l) => l.id !== landmarkId));
 
   return (
     <Container>
