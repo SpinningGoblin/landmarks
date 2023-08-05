@@ -12,12 +12,14 @@ const MINUTE_WAIT: u64 = 5;
 
 #[tokio::main]
 async fn main() {
+    println!("Starting backups app");
     let forever = task::spawn(async {
         let mut interval = time::interval(Duration::from_secs(MINUTE_WAIT * 60));
         let mut app_state = AppState::load_from_env();
         let graph = app_state.to_graph().await.unwrap();
 
         let Some(world_id) = app_state.world_to_backup() else {
+            println!("No world_id to backup");
             return;
         };
 
