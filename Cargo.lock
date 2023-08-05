@@ -497,6 +497,7 @@ dependencies = [
  "anyhow",
  "aws-config",
  "aws-sdk-s3",
+ "chrono",
  "landmarks_core",
  "neo4rs",
  "serde",
@@ -589,6 +590,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "serde",
  "time 0.1.45",
  "wasm-bindgen",
  "winapi",
@@ -1075,6 +1077,7 @@ dependencies = [
 name = "landmarks_core"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "neo4rs",
  "serde",
  "serde_json",
