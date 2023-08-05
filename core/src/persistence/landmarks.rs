@@ -9,6 +9,8 @@ use uuid::Uuid;
 
 use crate::landmarks::{CreateLandmark, Landmark, LandmarkMetadata};
 
+use super::worlds::set_world_updated_at_now;
+
 pub async fn add_biome(
     transaction: &Txn,
     landmark_id: Uuid,
@@ -26,6 +28,7 @@ pub async fn add_biome(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -46,6 +49,7 @@ pub async fn remove_biome(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -62,6 +66,7 @@ pub async fn add_tag(transaction: &Txn, landmark_id: Uuid, tag: Tag) -> Result<(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -82,6 +87,7 @@ pub async fn remove_tag(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -102,6 +108,7 @@ pub async fn add_farm(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -122,6 +129,7 @@ pub async fn remove_farm(
     );
 
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -151,6 +159,7 @@ pub async fn update_coordinate(
         RETURN landmark.id"
     );
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
 
@@ -167,6 +176,37 @@ pub async fn update_notes(
         notes
     );
     transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, &landmark_id).await?;
+    Ok(())
+}
+
+pub async fn update_world_updated_at(
+    transaction: &Txn,
+    landmark_id: &Uuid,
+) -> Result<(), LandmarksError> {
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let full_query = format!(
+        "
+        {landmark_match}
+        MATCH (landmark)-[:PARTOF]->(world:World)
+        RETURN world.id as world_id
+        "
+    );
+    let mut result = transaction.execute(query(&full_query)).await?;
+    let Some(world_row) = result.next().await? else {
+        println!("Couldn't find world for landmark {landmark_id}");
+        return Ok(());
+    };
+
+    let world_id_value: String =
+        world_row
+            .get("world_id")
+            .ok_or(LandmarksError::GraphDeserializationError {
+                message: "no_world_id_value".to_string(),
+            })?;
+    let world_id = Uuid::parse_str(&world_id_value).unwrap();
+    set_world_updated_at_now(transaction, &world_id).await?;
+
     Ok(())
 }
 
@@ -294,6 +334,7 @@ pub async fn create(
     );
 
     transaction.run(query(&full_query)).await?;
+    set_world_updated_at_now(transaction, &world_id).await?;
 
     Ok(id)
 }

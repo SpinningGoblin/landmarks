@@ -3,6 +3,7 @@ use crate::{
     users::User,
     Tag,
 };
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -19,4 +20,5 @@ pub struct WorldMetadata {
     pub notes: Option<String>,
     pub creator: User,
     pub shared_users: Vec<User>,
+    pub updated_at: Option<DateTime<Utc>>,
 }

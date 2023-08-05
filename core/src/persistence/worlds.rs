@@ -5,6 +5,7 @@ use crate::{
     users::User,
     LandmarksError, Tag,
 };
+use chrono::{DateTime, Utc};
 use neo4rs::{query, Graph, Node, Query, Txn};
 use uuid::Uuid;
 
@@ -28,6 +29,22 @@ pub async fn check_world_exists(
     let mut result = transaction.execute(world_match_query(world_id)).await?;
     let world_row = result.next().await?;
     Ok(world_row.is_some())
+}
+
+pub async fn set_world_updated_at_now(
+    transaction: &Txn,
+    world_id: &Uuid,
+) -> Result<(), LandmarksError> {
+    let now = Utc::now().to_string();
+    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
+    let full_query = format!(
+        "{world_match}
+        SET world.updated_at = '{now}'
+        RETURN world.id",
+    );
+    transaction.run(query(&full_query)).await?;
+
+    Ok(())
 }
 
 pub async fn world_export_by_id(
@@ -79,6 +96,9 @@ pub async fn world_export_by_id(
             let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
                 message: e.to_string(),
             })?;
+            let updated_at_val: Option<String> = world_node.get("updated_at");
+            let updated_at: Option<DateTime<Utc>> =
+                updated_at_val.map(|val| DateTime::from_str(&val).unwrap());
             let tag_values: Vec<String> =
                 row.get("tags")
                     .ok_or(LandmarksError::GraphDeserializationError {
@@ -135,6 +155,7 @@ pub async fn world_export_by_id(
                     notes,
                     creator: User { name: creator },
                     shared_users,
+                    updated_at,
                 },
                 landmarks,
             }))
@@ -205,6 +226,11 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
             message: e.to_string(),
         })?;
+
+        let updated_at_val: Option<String> = world_node.get("updated_at");
+        let updated_at: Option<DateTime<Utc>> =
+            updated_at_val.map(|val| DateTime::from_str(&val).unwrap());
+
         let tag_values: Vec<String> =
             row.get("tags")
                 .ok_or(LandmarksError::GraphDeserializationError {
@@ -244,6 +270,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
             platform,
             creator: User { name: creator },
             shared_users,
+            updated_at,
         });
     }
 
@@ -274,12 +301,12 @@ pub async fn create(
         });
     let tag_merge = tag_merges.join("\n");
     let world_id = Uuid::new_v4();
+    let created_at = Utc::now().to_string();
+    let notes = create_world.notes.clone().unwrap_or_default();
+    let seed = create_world.seed.clone();
+    let name = create_world.guaranteed_name();
     let world_create = format!(
-        "CREATE (world:World {{ name: '{}', seed: '{}', notes: '{}', id: '{}' }})",
-        create_world.guaranteed_name(),
-        &create_world.seed,
-        create_world.notes.clone().unwrap_or_default(),
-        world_id.to_string()
+        "CREATE (world:World {{ name: '{name}', seed: '{seed}', notes: '{notes}', id: '{world_id}', updated_at: '{created_at}' }})",
     );
     let world_platform_rel = "CREATE (world)-[:ON]->(platform)";
     let world_user_rel = "CREATE (world)-[:CREATEDBY]->(user)";
@@ -326,6 +353,7 @@ pub async fn share_world(
             RETURN target.name"
     );
     transaction.run(query(&full_query)).await?;
+    set_world_updated_at_now(transaction, world_id).await?;
 
     Ok(())
 }
