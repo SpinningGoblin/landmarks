@@ -16,6 +16,10 @@ pub async fn save_world(
         return Err(anyhow::Error::msg("no world"));
     };
 
+    if let Some(backup_date) = &app_state.last_backed_up_date {
+        println!("{backup_date:?}");
+    }
+
     println!("retrieved world");
     let should_back_up = app_state.need_to_backup_world(&world);
 
