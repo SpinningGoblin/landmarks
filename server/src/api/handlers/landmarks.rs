@@ -4,14 +4,24 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use landmarks_core::{landmarks::CreateLandmark, persistence};
+use landmarks_core::{
+    landmarks::{CreateLandmark, LandmarkLinkType},
+    persistence,
+};
 use uuid::Uuid;
 
 use crate::{api::auth::check_auth, config::app_state::AppState};
 
 use super::{
-    AddBiome, AddFarm, AddTag, RemoveBiome, RemoveFarm, RemoveTag, UpdateCoordinate, UpdateNotes,
+    AddBiome, AddFarm, AddLandmarkLink, AddTag, RemoveBiome, RemoveFarm, RemoveTag,
+    UpdateCoordinate, UpdateNotes,
 };
+
+pub async fn list_landmark_link_types() -> Result<impl IntoResponse, (StatusCode, String)> {
+    Ok(Json(
+        LandmarkLinkType::all().collect::<Vec<LandmarkLinkType>>(),
+    ))
+}
 
 pub async fn landmarks_for_world(
     State(app_state): State<AppState>,
@@ -66,6 +76,30 @@ pub async fn add_landmark_to_world(
     transaction.commit().await.unwrap();
 
     Ok(id.to_string())
+}
+
+pub async fn link_landmarks(
+    State(app_state): State<AppState>,
+    headers: HeaderMap,
+    Json(add_landmark_link): Json<AddLandmarkLink>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if check_auth(&headers, &app_state).is_none() {
+        return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
+    };
+
+    let graph = app_state.to_graph().await.unwrap();
+    let transaction = graph.start_txn().await.unwrap();
+
+    persistence::landmarks::link_landmarks(
+        &transaction,
+        &add_landmark_link.landmark_id_1,
+        &add_landmark_link.landmark_id_2,
+        &add_landmark_link.link_type,
+    )
+    .await
+    .unwrap();
+
+    Ok("OK")
 }
 
 pub async fn add_biome_to_landmark(

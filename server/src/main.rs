@@ -7,9 +7,9 @@ use landmarks::{
         health_check::ping,
         landmarks::{
             add_biome_to_landmark, add_farm_to_landmark, add_landmark_to_world,
-            add_tag_to_landmark, landmark_by_id, landmarks_for_world, remove_biome_from_landmark,
-            remove_farm_from_landmark, remove_tag_from_landmark, update_coordinate_on_landmark,
-            update_notes_on_landmark,
+            add_tag_to_landmark, landmark_by_id, landmarks_for_world, link_landmarks,
+            list_landmark_link_types, remove_biome_from_landmark, remove_farm_from_landmark,
+            remove_tag_from_landmark, update_coordinate_on_landmark, update_notes_on_landmark,
         },
         minecraft::{list_biomes, list_dimensions, list_platforms},
         users::list_users,
@@ -39,6 +39,8 @@ async fn main() {
         .route("/worlds/:world_id/landmarks", post(add_landmark_to_world))
         .route("/worlds/:world_id/landmarks", get(landmarks_for_world))
         .route("/worlds/:world_id/export", get(world_export))
+        .route("/landmarks/link", post(link_landmarks))
+        .route("/landmarks/link_types", get(list_landmark_link_types))
         .route("/landmarks/:landmark_id", get(landmark_by_id))
         .route(
             "/landmarks/:landmark_id/add_farm",

@@ -1,5 +1,6 @@
 mod add_biome;
 mod add_farm;
+mod add_landmark_link;
 mod add_tag;
 pub(super) mod headers;
 pub mod health_check;
@@ -15,6 +16,7 @@ pub mod worlds;
 
 pub use add_biome::AddBiome;
 pub use add_farm::AddFarm;
+pub use add_landmark_link::AddLandmarkLink;
 pub use add_tag::AddTag;
 pub use remove_biome::RemoveBiome;
 pub use remove_farm::RemoveFarm;
