@@ -44,10 +44,7 @@ impl AppState {
     }
 
     pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
-        self.connection
-            .to_graph()
-            .await
-            .map_err(|e| anyhow::Error::new(e))
+        self.connection.to_graph().await.map_err(anyhow::Error::new)
     }
 
     pub async fn aws_client(&self) -> Client {
