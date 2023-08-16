@@ -128,10 +128,7 @@ pub async fn world_export_by_id(
 
             for landmark_id in landmark_ids {
                 let id = Uuid::parse_str(&landmark_id).unwrap();
-                let landmark = super::landmarks::landmark_by_id(graph, &id)
-                    .await
-                    .unwrap()
-                    .unwrap();
+                let landmark = super::landmarks::landmark_by_id(graph, &id).await?.unwrap();
                 landmarks.push(landmark);
             }
 

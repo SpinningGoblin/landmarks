@@ -1,15 +1,55 @@
 use std::str::FromStr;
 
 use crate::{
+    landmarks::{LandmarkLink, LandmarkLinkType},
     minecraft::{Biome, Coordinate, Dimension, Farm},
     LandmarksError, Tag,
 };
+use chrono::Utc;
 use neo4rs::{query, Graph, Node, Txn};
 use uuid::Uuid;
 
 use crate::landmarks::{CreateLandmark, Landmark, LandmarkMetadata};
 
 use super::worlds::set_world_updated_at_now;
+
+pub async fn link_landmarks(
+    transaction: &Txn,
+    landmark_id_1: &Uuid,
+    landmark_id_2: &Uuid,
+    link_type: &Option<LandmarkLinkType>,
+) -> Result<(), LandmarksError> {
+    let landmark_matches = format!(
+        "
+        MATCH (landmark_1:Landmark {{ id: '{landmark_id_1}' }})
+        MATCH (landmark_2:Landmark {{ id: '{landmark_id_2}' }})
+        "
+    );
+    let link_type_text = link_type
+        .as_ref()
+        .map(|lt| lt.to_string())
+        .unwrap_or_default();
+    let link_rel = format!("[:LINKEDTO {{ link_type: '{link_type_text}' }}]");
+    let merge = format!(
+        "
+        MERGE (landmark_1)-{link_rel}->(landmark_2)
+        MERGE (landmark_2)-{link_rel}->(landmark_1)
+        "
+    );
+
+    let full_query = format!(
+        "
+        {landmark_matches}
+        {merge}
+        RETURN landmark_1.id, landmark_2.id
+        "
+    );
+
+    transaction.run(query(&full_query)).await?;
+    update_world_updated_at(transaction, landmark_id_1).await?;
+
+    Ok(())
+}
 
 pub async fn add_biome(
     transaction: &Txn,
@@ -185,27 +225,20 @@ pub async fn update_world_updated_at(
     landmark_id: &Uuid,
 ) -> Result<(), LandmarksError> {
     let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let now = Utc::now().to_string();
     let full_query = format!(
         "
         {landmark_match}
         MATCH (landmark)-[:PARTOF]->(world:World)
+        SET world.updated_at = '{now}'
         RETURN world.id as world_id
         "
     );
     let mut result = transaction.execute(query(&full_query)).await?;
-    let Some(world_row) = result.next().await? else {
-        println!("Couldn't find world for landmark {landmark_id}");
-        return Ok(());
-    };
 
-    let world_id_value: String =
-        world_row
-            .get("world_id")
-            .ok_or(LandmarksError::GraphDeserializationError {
-                message: "no_world_id_value".to_string(),
-            })?;
-    let world_id = Uuid::parse_str(&world_id_value).unwrap();
-    set_world_updated_at_now(transaction, &world_id).await?;
+    if result.next().await?.is_none() {
+        println!("Couldn't find world for landmark {landmark_id}");
+    };
 
     Ok(())
 }
@@ -386,6 +419,68 @@ pub async fn landmarks_for_world(
     Ok(landmarks)
 }
 
+pub async fn linked_landmarks(
+    graph: &Graph,
+    landmark_id: &Uuid,
+) -> Result<Vec<LandmarkLink>, LandmarksError> {
+    let landmark_match = format!(
+        "MATCH (landmark:Landmark {{ id: '{}' }})",
+        landmark_id.to_string()
+    );
+    let link_match = "MATCH (landmark)-[link:LINKEDTO]->(linked_landmark:Landmark)";
+    let query_return = "RETURN link.link_type as link_type, linked_landmark as landmark";
+    let full_query = format!(
+        "
+        {landmark_match}
+        {link_match}
+        {query_return}
+        "
+    );
+
+    let mut result = graph.execute(query(&full_query)).await?;
+    let mut links: Vec<LandmarkLink> = Vec::new();
+
+    while let Ok(Some(row)) = result.next().await {
+        let landmark_node: Node =
+            row.get("landmark")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_landmark".to_string(),
+                })?;
+        let name: String = landmark_node.get("name").unwrap_or_default();
+        let notes: Option<String> = landmark_node.get("notes");
+        let id_value: String =
+            landmark_node
+                .get("id")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_landmark_id".to_string(),
+                })?;
+        let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
+            message: e.to_string(),
+        })?;
+        let x: i64 = landmark_node.get("x").unwrap();
+        let y: i64 = landmark_node.get("y").unwrap();
+        let z: i64 = landmark_node.get("z").unwrap();
+        let link_type_value: String =
+            row.get("link_type")
+                .ok_or(LandmarksError::GraphDeserializationError {
+                    message: "no_link_type".to_string(),
+                })?;
+        let link_type: LandmarkLinkType = LandmarkLinkType::from_str(&link_type_value)
+            .map_err(|_| LandmarksError::InvalidLandmarkLinkType(link_type_value))?;
+        links.push(LandmarkLink {
+            landmark_metadata: LandmarkMetadata {
+                id,
+                coordinate: Coordinate { x, y, z },
+                name,
+                notes,
+            },
+            link_type: Some(link_type),
+        });
+    }
+
+    Ok(links)
+}
+
 pub async fn landmark_by_id(
     graph: &Graph,
     landmark_id: &Uuid,
@@ -410,7 +505,7 @@ pub async fn landmark_by_id(
         {selects_and_return}"
     );
 
-    let mut result = graph.execute(query(&full_query)).await.unwrap();
+    let mut result = graph.execute(query(&full_query)).await?;
 
     match result.next().await {
         Ok(Some(row)) => {
@@ -465,6 +560,8 @@ pub async fn landmark_by_id(
                     })?;
             let dimension = Dimension::from_str(&dimension_value).unwrap();
 
+            let links = linked_landmarks(graph, landmark_id).await?;
+
             Ok(Some(Landmark {
                 metadata: LandmarkMetadata {
                     id,
@@ -476,6 +573,7 @@ pub async fn landmark_by_id(
                 tags,
                 biomes,
                 dimension,
+                links,
             }))
         }
         Ok(None) => Ok(None),

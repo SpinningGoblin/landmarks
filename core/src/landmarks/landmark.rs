@@ -4,7 +4,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::LandmarkMetadata;
+use super::{LandmarkLink, LandmarkMetadata};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Landmark {
@@ -16,4 +16,6 @@ pub struct Landmark {
     #[serde(default)]
     pub biomes: Vec<Biome>,
     pub dimension: Dimension,
+    #[serde(default)]
+    pub links: Vec<LandmarkLink>,
 }

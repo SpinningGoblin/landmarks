@@ -9,6 +9,8 @@ pub enum LandmarksError {
     InvalidDimension(String),
     #[error("invalid platform ({})", .0)]
     InvalidPlatform(String),
+    #[error("invalid landmark link type ({})", .0)]
+    InvalidLandmarkLinkType(String),
     #[error("no world with id ({})", .0)]
     NoWorldWithId(Uuid),
     #[error("invalid persisted id ({})", .message)]
