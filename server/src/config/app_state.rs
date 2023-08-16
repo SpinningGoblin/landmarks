@@ -1,5 +1,4 @@
 use landmarks_core::config::neo4j::ConnectionConfig;
-use neo4rs::Graph;
 
 use super::auth::Authentication;
 
@@ -25,7 +24,7 @@ impl AppState {
         self.authentication.check_admin(token)
     }
 
-    pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
-        self.connection.to_graph().await.map_err(anyhow::Error::new)
+    pub fn connection_config(&self) -> &ConnectionConfig {
+        &self.connection
     }
 }

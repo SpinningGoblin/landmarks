@@ -31,7 +31,7 @@ pub async fn landmarks_for_world(
     let Some(_) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let landmarks = persistence::landmarks::landmarks_for_world(&graph, &world_id)
         .await
         .unwrap();
@@ -47,7 +47,7 @@ pub async fn landmark_by_id(
     let Some(_) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let landmark = persistence::landmarks::landmark_by_id(&graph, &landmark_id)
         .await
         .unwrap();
@@ -68,7 +68,7 @@ pub async fn add_landmark_to_world(
     let Some(user) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
     let id = persistence::landmarks::create(&transaction, world_id, input, &user)
         .await
@@ -87,7 +87,7 @@ pub async fn link_landmarks(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::link_landmarks(
@@ -112,7 +112,7 @@ pub async fn add_biome_to_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::add_biome(&transaction, landmark_id, add_biome.biome)
@@ -134,7 +134,7 @@ pub async fn remove_biome_from_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::remove_biome(&transaction, landmark_id, remove_biome.biome)
@@ -156,7 +156,7 @@ pub async fn add_tag_to_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::add_tag(&transaction, landmark_id, add_tag.tag)
@@ -178,7 +178,7 @@ pub async fn update_notes_on_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::update_notes(&transaction, landmark_id, &update_notes.notes)
@@ -200,7 +200,7 @@ pub async fn update_coordinate_on_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::update_coordinate(
@@ -226,7 +226,7 @@ pub async fn remove_tag_from_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::remove_tag(&transaction, landmark_id, remove_tag.tag)
@@ -248,7 +248,7 @@ pub async fn add_farm_to_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::add_farm(&transaction, landmark_id, add_farm.farm)
@@ -270,7 +270,7 @@ pub async fn remove_farm_from_landmark(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::remove_farm(&transaction, landmark_id, remove_farm.farm)

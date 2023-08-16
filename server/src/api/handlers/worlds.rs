@@ -21,7 +21,7 @@ pub async fn worlds_for_user(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let worlds = persistence::worlds::all_for_user(&graph, &user)
         .await
         .unwrap();
@@ -38,7 +38,7 @@ pub async fn world_export(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     }
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let world = persistence::worlds::world_export_by_id(&graph, &world_id)
         .await
         .unwrap();
@@ -54,7 +54,7 @@ pub async fn create_world(
     let Some(user) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
     let id = persistence::worlds::create(&transaction, &user, &input)
         .await
@@ -77,7 +77,7 @@ pub async fn share_world(
     let Some(user) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let transaction = graph.start_txn().await.unwrap();
 
     persistence::worlds::share_world(&transaction, &user, &world_id, &input.user)

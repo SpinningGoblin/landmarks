@@ -1,18 +1,17 @@
 use aws_sdk_s3::primitives::ByteStream;
 use chrono::Utc;
-use neo4rs::Graph;
 use uuid::Uuid;
 
 use crate::config::AppState;
 
 pub async fn save_world(
     world_id: &Uuid,
-    graph: &Graph,
     app_state: &mut AppState,
 ) -> Result<String, anyhow::Error> {
     println!("Starting save of world");
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let Ok(Some(world)) =
-        landmarks_core::persistence::worlds::world_export_by_id(graph, world_id).await
+        landmarks_core::persistence::worlds::world_export_by_id(&graph, world_id).await
     else {
         println!("No world with id {world_id}");
         return Err(anyhow::Error::msg("no world"));

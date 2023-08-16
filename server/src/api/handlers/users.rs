@@ -16,7 +16,7 @@ pub async fn list_users(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
 
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
     let users = persistence::users::list_users(&graph).await.unwrap();
 
     Ok(Json(users))

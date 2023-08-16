@@ -25,7 +25,7 @@ async fn main() {
     println!("running the server");
 
     let app_state = AppState::load_from_env();
-    let graph = app_state.to_graph().await.unwrap();
+    let graph = app_state.connection_config().to_graph().await.unwrap();
 
     ensure_minecraft_nodes(&graph).await.unwrap();
     let app = Router::new()

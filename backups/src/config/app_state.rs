@@ -1,7 +1,6 @@
 use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
 use landmarks_core::{config::neo4j::ConnectionConfig, worlds::World};
-use neo4rs::Graph;
 use uuid::Uuid;
 
 use super::{backup_plan::BackupPlan, blob_storage::AwsS3Storage};
@@ -43,8 +42,8 @@ impl AppState {
         }
     }
 
-    pub async fn to_graph(&self) -> Result<Graph, anyhow::Error> {
-        self.connection.to_graph().await.map_err(anyhow::Error::new)
+    pub fn connection_config(&self) -> &ConnectionConfig {
+        &self.connection
     }
 
     pub async fn aws_client(&self) -> Client {
