@@ -499,7 +499,6 @@ dependencies = [
  "aws-sdk-s3",
  "chrono",
  "landmarks_core",
- "serde",
  "serde_json",
  "tokio",
  "uuid",
