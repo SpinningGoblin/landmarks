@@ -5,8 +5,8 @@ use crate::{
     minecraft::{Biome, Coordinate, Dimension, Farm},
     LandmarksError, Tag,
 };
-use chrono::Utc;
 use neo4rs::{query, Graph, Node, Txn};
+use time::format_description::well_known;
 use uuid::Uuid;
 
 use crate::landmarks::{CreateLandmark, Landmark, LandmarkMetadata};
@@ -225,7 +225,9 @@ pub async fn update_world_updated_at(
     landmark_id: &Uuid,
 ) -> Result<(), LandmarksError> {
     let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
-    let now = Utc::now().to_string();
+    let now = time::OffsetDateTime::now_utc()
+        .format(&well_known::Rfc3339)
+        .unwrap();
     let full_query = format!(
         "
         {landmark_match}

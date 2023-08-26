@@ -5,8 +5,8 @@ use crate::{
     users::User,
     LandmarksError, Tag,
 };
-use chrono::{DateTime, Utc};
 use neo4rs::{query, Graph, Node, Query, Txn};
+use time::{format_description::well_known, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::{
@@ -35,7 +35,9 @@ pub async fn set_world_updated_at_now(
     transaction: &Txn,
     world_id: &Uuid,
 ) -> Result<(), LandmarksError> {
-    let now = Utc::now().to_string();
+    let now = time::OffsetDateTime::now_utc()
+        .format(&well_known::Rfc3339)
+        .unwrap();
     let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
     let full_query = format!(
         "{world_match}
@@ -97,8 +99,8 @@ pub async fn world_export_by_id(
                 message: e.to_string(),
             })?;
             let updated_at_val: Option<String> = world_node.get("updated_at");
-            let updated_at: Option<DateTime<Utc>> =
-                updated_at_val.map(|val| DateTime::from_str(&val).unwrap());
+            let updated_at: Option<OffsetDateTime> = updated_at_val
+                .map(|val| OffsetDateTime::parse(&val, &well_known::Rfc3339).unwrap());
             let tag_values: Vec<String> =
                 row.get("tags")
                     .ok_or(LandmarksError::GraphDeserializationError {
@@ -225,8 +227,8 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         })?;
 
         let updated_at_val: Option<String> = world_node.get("updated_at");
-        let updated_at: Option<DateTime<Utc>> =
-            updated_at_val.map(|val| DateTime::from_str(&val).unwrap());
+        let updated_at: Option<OffsetDateTime> =
+            updated_at_val.map(|val| OffsetDateTime::parse(&val, &well_known::Rfc3339).unwrap());
 
         let tag_values: Vec<String> =
             row.get("tags")
@@ -298,7 +300,9 @@ pub async fn create(
         });
     let tag_merge = tag_merges.join("\n");
     let world_id = Uuid::new_v4();
-    let created_at = Utc::now().to_string();
+    let created_at = time::OffsetDateTime::now_utc()
+        .format(&well_known::Rfc3339)
+        .unwrap();
     let notes = create_world.notes.clone().unwrap_or_default();
     let seed = create_world.seed.clone();
     let name = create_world.guaranteed_name();

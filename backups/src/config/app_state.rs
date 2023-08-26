@@ -1,6 +1,6 @@
 use aws_sdk_s3::Client;
-use chrono::{DateTime, Utc};
 use landmarks_core::{config::neo4j::ConnectionConfig, worlds::World};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use super::{backup_plan::BackupPlan, blob_storage::AwsS3Storage};
@@ -10,7 +10,7 @@ pub struct AppState {
     pub connection: ConnectionConfig,
     pub aws_storage: AwsS3Storage,
     pub backup_plan: BackupPlan,
-    pub last_backed_up_date: Option<DateTime<Utc>>,
+    pub last_backed_up_date: Option<OffsetDateTime>,
 }
 
 impl AppState {
@@ -27,7 +27,7 @@ impl AppState {
         self.backup_plan.world_to_backup().cloned()
     }
 
-    pub fn update_last_backed_up(&mut self, date: DateTime<Utc>) {
+    pub fn update_last_backed_up(&mut self, date: OffsetDateTime) {
         self.last_backed_up_date = Some(date);
     }
 

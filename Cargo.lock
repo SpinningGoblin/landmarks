@@ -524,9 +524,9 @@ dependencies = [
  "anyhow",
  "aws-config",
  "aws-sdk-s3",
- "chrono",
  "landmarks_core",
  "serde_json",
+ "time 0.3.27",
  "tokio",
  "uuid",
 ]
@@ -615,7 +615,6 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
- "serde",
  "time 0.1.45",
  "wasm-bindgen",
  "winapi",
@@ -698,6 +697,9 @@ name = "deranged"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2696e8a945f658fd14dc3b87242e6b80cd0f36ff04ea560fa39082368847946"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "digest"
@@ -1090,13 +1092,13 @@ dependencies = [
 name = "landmarks_core"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "neo4rs",
  "serde",
  "serde_json",
  "strum",
  "strum_macros",
  "thiserror",
+ "time 0.3.27",
  "uuid",
 ]
 
@@ -1785,6 +1787,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bb39ee79a6d8de55f48f2293a830e040392f1c5f16e336bdd1788cd0aadce07"
 dependencies = [
  "deranged",
+ "itoa",
  "serde",
  "time-core",
  "time-macros",

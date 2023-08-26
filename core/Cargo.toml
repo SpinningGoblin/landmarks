@@ -6,13 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = { version = "0.4", features = ["serde"] }
 neo4rs = { git = "https://github.com/neo4j-labs/neo4rs.git", rev = "7d38f42009438fda8c584f1b1a7bb78bd8b77aff" }
 serde = { version = "1.0", features = ["derive"] }
 strum = "0.25"
 strum_macros = "0.25"
 thiserror = "1.0"
 uuid = { version = "1.4", features = ["v4", "serde", "fast-rng"] }
+time = { version = "0.3", features = ["formatting", "parsing", "serde"] }
 
 [dev-dependencies]
 serde_json = "1.0"

@@ -1,5 +1,5 @@
 use aws_sdk_s3::primitives::ByteStream;
-use chrono::Utc;
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::config::AppState;
@@ -49,7 +49,7 @@ pub async fn save_world(
         "do not need to backup".to_string()
     };
 
-    app_state.update_last_backed_up(Utc::now());
+    app_state.update_last_backed_up(OffsetDateTime::now_utc());
 
     Ok(backup_result)
 }
