@@ -1,3 +1,4 @@
+import { LandmarkLink } from "./LandmarkLink";
 import { LandmarkMetadata } from "./LandmarkMetadata";
 
 export interface Landmark {
@@ -6,4 +7,5 @@ export interface Landmark {
   tags: string[];
   biomes: string[];
   dimension: string;
+  links: LandmarkLink[];
 }
