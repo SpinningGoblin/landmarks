@@ -99,6 +99,8 @@ pub async fn link_landmarks(
     .await
     .unwrap();
 
+    transaction.commit().await.unwrap();
+
     Ok("OK")
 }
 
