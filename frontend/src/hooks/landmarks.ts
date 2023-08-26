@@ -6,12 +6,20 @@ import {
   addLandmark,
   addTag,
   fetchLandmark,
+  fetchLandmarkLinkTypes,
   fetchLandmarks,
+  linkLandmarks,
   removeBiome,
   removeFarm,
   removeTag,
 } from "../api/landmarks";
 import { CreateLandmark } from "../api/CreateLandmark";
+
+export const useLandmarkLinkTypes = () => {
+  const { data, isLoading } = useQuery(["linkTypes"], fetchLandmarkLinkTypes);
+
+  return { linkTypes: data ?? [], isLoading };
+};
 
 export const useLandmarks = (worldId?: string) => {
   const { currentUser } = useUser();
@@ -135,4 +143,35 @@ export const useAddLandmark = (onSuccess: () => void, worldId?: string) => {
   });
 
   return { addLandmark: mutation };
+};
+
+export interface LinkLandmark {
+  landmarkId: string;
+  linkType: string;
+}
+
+export const useLinkLandmarks = (
+  onSuccess: () => void,
+  landmarkId?: string,
+) => {
+  const queryClient = useQueryClient();
+  const { currentUser } = useUser();
+
+  const mutation = useMutation({
+    mutationFn: (linkLandmark: LinkLandmark) =>
+      linkLandmarks(
+        {
+          landmark_id_1: landmarkId,
+          landmark_id_2: linkLandmark.landmarkId,
+          link_type: linkLandmark.linkType,
+        },
+        currentUser,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["landmarks", landmarkId]);
+      onSuccess();
+    },
+  });
+
+  return { addLinks: mutation };
 };
