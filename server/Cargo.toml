@@ -6,10 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0"
 axum = { git = "https://github.com/tokio-rs/axum.git", branch = "main" }
 landmarks_core = { path = "../core" }
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1.29", features = ["full"] }
-tower-http = { version = "0.4.1", features = ["cors"] }
+tokio = { version = "1.32", features = ["full"] }
+tower-http = { version = "0.4", features = ["cors"] }
 uuid = { version = "1.4", features = ["v4", "serde", "fast-rng"] }
