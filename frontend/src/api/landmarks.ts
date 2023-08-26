@@ -4,6 +4,7 @@ import { LandmarkMetadata } from "../models/LandmarkMetadata";
 import { User } from "./User";
 import { Landmark } from "../models/Landmark";
 import { request } from "./request";
+import { LinkLandmarks } from "./LinkLandmarks";
 
 const serverUrl = getBackendUrl();
 
@@ -148,5 +149,28 @@ export const fetchLandmarks = async (
     "GET",
     (response) => response.json(),
     user,
+  );
+};
+
+export const fetchLandmarkLinkTypes = async (): Promise<string[]> => {
+  const url = `${serverUrl}/landmarks/link_types`;
+  return request<unknown, string[]>(url, "GET", (response) => response.json());
+};
+
+export const linkLandmarks = async (
+  linkRequest: LinkLandmarks,
+  user?: User,
+): Promise<string> => {
+  if (!user || !linkRequest.landmark_id_1 || !linkRequest.landmark_id_2) {
+    throw new Error("No user or landmark IDs");
+  }
+
+  const url = `${serverUrl}/landmarks/link`;
+  return request<LinkLandmarks, string>(
+    url,
+    "POST",
+    (response) => response.text(),
+    user,
+    linkRequest,
   );
 };
