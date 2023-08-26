@@ -1,12 +1,10 @@
 import { FC, useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  useAddBiome,
   useAddFarm,
   useAddTag,
   useLandmark,
   useLandmarks,
-  useRemoveBiome,
   useRemoveFarm,
   useRemoveTag,
 } from "../hooks/landmarks";
@@ -14,23 +12,17 @@ import {
   Button,
   Chip,
   Container,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { Coordinate } from "../components/Coordinate";
-import { useBiomes } from "../hooks/minecraft";
+import { Dimension } from "../components/Dimension";
+import { LandmarkBiomes } from "../components/LandmarkBiomes";
+import { LandmarkLinks } from "../components/LandmarkLinks";
 
 export const Landmark: FC = () => {
   const { worldId, landmarkId } = useParams();
-  const [newBiome, setNewBiome] = useState("");
-  const addBiomeCallback = useCallback(() => {
-    setNewBiome("");
-  }, [setNewBiome]);
   const [newFarm, setNewFarm] = useState("");
   const addFarmCallback = useCallback(() => {
     setNewFarm("");
@@ -41,18 +33,14 @@ export const Landmark: FC = () => {
     setNewTag("");
   }, [setNewTag]);
 
-  const { biomes } = useBiomes();
   const { landmarks } = useLandmarks(worldId);
   const { landmark, isLoading } = useLandmark(landmarkId);
   const { removeFarm } = useRemoveFarm(landmarkId);
   const { addFarm } = useAddFarm(addFarmCallback, landmarkId);
-  const { removeBiome } = useRemoveBiome(landmarkId);
-  const { addBiome } = useAddBiome(addBiomeCallback, landmarkId);
   const { removeTag } = useRemoveTag(landmarkId);
   const { addTag } = useAddTag(addTagCallback, landmarkId);
 
   const farmsSaving = removeFarm.isLoading || addFarm.isLoading;
-  const biomesSaving = removeBiome.isLoading || addBiome.isLoading;
   const tagsSaving = removeTag.isLoading || addTag.isLoading;
 
   console.log((landmarks ?? []).filter((l) => l.id !== landmarkId));
@@ -60,67 +48,19 @@ export const Landmark: FC = () => {
   return (
     <Container>
       {isLoading && <Typography>Loading ...</Typography>}
-      {landmark && (
+      {!isLoading && landmark && (
         <Stack spacing={4}>
           <Typography variant="h2">{landmark.metadata.name}</Typography>
           <Coordinate coordinate={landmark.metadata.coordinate} />
-          <Typography variant="h6" textTransform="capitalize">
-            Dimension: {landmark.dimension}
-          </Typography>
+          <Dimension dimension={landmark.dimension} />
           <Typography variant="body2" textTransform="capitalize">
             Notes: {landmark.metadata.notes}
           </Typography>
-          {biomesSaving && (
-            <Typography variant="subtitle1">Saving Biomes</Typography>
-          )}
-          {!biomesSaving && (
-            <Stack direction="row" spacing={1} alignItems={"center"}>
-              <Typography variant="subtitle1">Biomes</Typography>
-              <Stack
-                direction="row"
-                spacing={0.5}
-                alignItems="center"
-                flexWrap="wrap"
-              >
-                {(landmark.biomes ?? []).map((biome, index) => (
-                  <Chip
-                    key={index}
-                    label={biome.replaceAll("_", " ")}
-                    color="primary"
-                    onDelete={() => removeBiome.mutate(biome)}
-                  />
-                ))}
-                <FormControl>
-                  <InputLabel>Biomes</InputLabel>
-                  <Select
-                    label="Biomes"
-                    value={newBiome}
-                    onChange={(event) => setNewBiome(event.target.value)}
-                    style={{ minWidth: "20em" }}
-                    size="small"
-                  >
-                    {biomes?.map((b) => (
-                      <MenuItem key={b} value={b}>
-                        <Typography style={{ textTransform: "capitalize" }}>
-                          {b.replaceAll("_", " ")}
-                        </Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <Button
-                  onClick={() => {
-                    if (!newBiome) {
-                      return;
-                    }
-                    addBiome.mutate(newBiome);
-                  }}
-                >
-                  + Add Biome
-                </Button>
-              </Stack>
-            </Stack>
-          )}
+          <LandmarkBiomes
+            allowEditing
+            landmarkBiomes={landmark.biomes}
+            landmarkId={landmarkId}
+          />
           {tagsSaving && (
             <Typography variant="subtitle1">Saving Tags</Typography>
           )}
@@ -188,6 +128,12 @@ export const Landmark: FC = () => {
               </Stack>
             </Stack>
           )}
+          <LandmarkLinks
+            worldId={worldId}
+            landmarkLinks={landmark.links}
+            landmarkId={landmarkId}
+            allowEditing
+          />
         </Stack>
       )}
     </Container>
