@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::{
-    landmarks::{LandmarkLink, LandmarkLinkType},
+    landmarks::{LandmarkFilters, LandmarkLink, LandmarkLinkType},
     minecraft::{Biome, Coordinate, Dimension, Farm},
     LandmarksError, Tag,
 };
@@ -377,12 +377,49 @@ pub async fn create(
 pub async fn landmarks_for_world(
     graph: &Graph,
     world_id: &Uuid,
+    landmark_filters: &LandmarkFilters,
 ) -> Result<Vec<LandmarkMetadata>, LandmarksError> {
     let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id.to_string());
     let landmark_match = format!("MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)");
+    let mut landmark_where_clauses: Vec<String> = Vec::new();
+
+    if let Some(dimension) = landmark_filters.dimension.as_ref() {
+        landmark_where_clauses.push(format!(
+            "(landmark)-[:IN]->(:Dimension {{ name: '{}' }})",
+            dimension
+        ));
+    };
+
+    let tag_filters = landmark_filters
+        .tags
+        .iter()
+        .map(|tag| format!("(landmark)-[:HASTAG]->(:Tag {{ name: '{tag}' }})"))
+        .collect::<Vec<String>>();
+
+    if !tag_filters.is_empty() {
+        landmark_where_clauses.push(format!("({})", tag_filters.join(" OR ")));
+    }
+
+    let farm_filters = landmark_filters
+        .farms
+        .iter()
+        .map(|farm| format!("(landmark)-[:HASFARM]->(:Farm {{ name: '{farm}' }})"))
+        .collect::<Vec<String>>();
+
+    if !farm_filters.is_empty() {
+        landmark_where_clauses.push(format!("({})", farm_filters.join(" OR ")));
+    }
+
+    let landmark_where = if landmark_where_clauses.is_empty() {
+        String::new()
+    } else {
+        format!("WHERE {}", landmark_where_clauses.join(" AND "))
+    };
+
     let full_query = format!(
         "{world_match}
         {landmark_match}
+        {landmark_where}
         RETURN landmark"
     );
 
