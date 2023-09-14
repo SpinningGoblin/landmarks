@@ -3,6 +3,7 @@ mod error;
 pub mod landmarks;
 pub mod minecraft;
 pub mod persistence;
+pub mod serialization;
 mod string_visitor;
 mod tag;
 pub mod users;
