@@ -1,11 +1,11 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
 };
 use landmarks_core::{
-    landmarks::{CreateLandmark, LandmarkLinkType},
+    landmarks::{CreateLandmark, LandmarkFilters, LandmarkLinkType},
     persistence,
 };
 use uuid::Uuid;
@@ -27,14 +27,16 @@ pub async fn landmarks_for_world(
     State(app_state): State<AppState>,
     headers: HeaderMap,
     Path(world_id): Path<Uuid>,
+    Query(landmark_filters): Query<LandmarkFilters>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let Some(_) = check_auth(&headers, &app_state) else {
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let landmarks = persistence::landmarks::landmarks_for_world(&graph, &world_id)
-        .await
-        .unwrap();
+    let landmarks =
+        persistence::landmarks::landmarks_for_world(&graph, &world_id, &landmark_filters)
+            .await
+            .unwrap();
 
     Ok(Json(landmarks))
 }
