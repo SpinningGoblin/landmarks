@@ -54,7 +54,7 @@ pub async fn world_export_by_id(
     world_id: &Uuid,
 ) -> Result<Option<World>, LandmarksError> {
     let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
-    let detail_matches = r#"
+    let detail_matches = r"
         OPTIONAL MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)
         OPTIONAL MATCH (world)-[:HASTAG]->(tag:Tag)
         OPTIONAL MATCH (world)-[:SHAREDWITH]->(shared_user:User)
@@ -66,7 +66,7 @@ pub async fn world_export_by_id(
         apoc.coll.toSet(collect(shared_user.name)) as shared_users,
         platform.name as platform,
         creator.name as creator
-        "#;
+        ";
 
     let full_query = format!(
         "{world_match}
@@ -166,7 +166,7 @@ pub async fn world_export_by_id(
 
 pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata>, LandmarksError> {
     let user_match = format!("MATCH (user:User {{ name: '{}' }})", user);
-    let world_matches = r#"
+    let world_matches = r"
         MATCH (user)-[:CREATED]->(world:World)
         OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
@@ -177,8 +177,8 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         apoc.coll.toSet(collect(shared_user.name)) as shared_users,
         platform.name as platform,
         creator.name as creator
-        "#;
-    let shared_matches = r#"
+        ";
+    let shared_matches = r"
         MATCH (world:World)-[:SHAREDWITH]->(user)
         OPTIONAL MATCH (world)-[has_tag:HASTAG]->(tag:Tag)
         MATCH (world)-[on_platform:ON]->(platform:Platform)
@@ -189,7 +189,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
         apoc.coll.toSet(collect(shared_user.name)) as shared_users,
         platform.name as platform,
         creator.name as creator
-        "#;
+        ";
     let full_query = format!(
         "{user_match}
         {world_matches}
@@ -342,8 +342,7 @@ pub async fn share_world(
 ) -> Result<(), LandmarksError> {
     let creator_world_query = format!(
         "MATCH (world:World {{ id: '{}' }})-[:CREATEDBY]->(:User {{ name: '{}' }})",
-        world_id.to_string(),
-        creator
+        world_id, creator
     );
     let target_query = format!("MATCH (target:User {{ name: '{}' }})", user);
     let merge_query = "MERGE (world)-[:SHAREDWITH]->(target)";

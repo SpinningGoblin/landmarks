@@ -12,7 +12,7 @@ where
     match opt.as_deref() {
         None | Some("") => Ok(Vec::new()),
         Some(s) => Ok(s
-            .split(",")
+            .split(',')
             .filter_map(|val| FromStr::from_str(val).ok())
             .collect::<Vec<T>>()),
     }

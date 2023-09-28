@@ -279,12 +279,7 @@ pub async fn create(
     let landmark_note = format!("notes: '{}'", &create.notes.unwrap_or_default());
     let landmark_create = format!(
         "CREATE (landmark:Landmark {{ id: '{}', {}, {}, {}, {}, {} }})",
-        id.to_string(),
-        basic_position,
-        coordinate_2d,
-        coordinate_3d,
-        landmark_name,
-        landmark_note
+        id, basic_position, coordinate_2d, coordinate_3d, landmark_name, landmark_note
     );
     let dimension_match = format!(
         "MERGE (dimension:Dimension {{ name: '{}' }})",
@@ -306,8 +301,7 @@ pub async fn create(
         let biome_var = format!("biome_{index}");
         biome_merges.push(format!(
             "MERGE ({}:Biome {{ name: '{}' }})",
-            biome_var,
-            biome.to_string()
+            biome_var, biome
         ));
         biome_variables.push(biome_var);
     });
@@ -317,11 +311,7 @@ pub async fn create(
     let mut farm_variables: Vec<String> = Vec::new();
     create.farms.iter().enumerate().for_each(|(index, farm)| {
         let farm_var = format!("farm_{index}");
-        farm_merges.push(format!(
-            "MERGE ({}:Farm {{ name: '{}' }})",
-            farm_var,
-            farm.to_string()
-        ));
+        farm_merges.push(format!("MERGE ({}:Farm {{ name: '{}' }})", farm_var, farm));
         farm_variables.push(farm_var);
     });
     let farm_merge = farm_merges.join("\n");
@@ -379,8 +369,8 @@ pub async fn landmarks_for_world(
     world_id: &Uuid,
     landmark_filters: &LandmarkFilters,
 ) -> Result<Vec<LandmarkMetadata>, LandmarksError> {
-    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id.to_string());
-    let landmark_match = format!("MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)");
+    let world_match = format!("MATCH (world:World {{ id: '{}' }})", world_id);
+    let landmark_match = "MATCH (world)-[:HASLANDMARK]->(landmark:Landmark)".to_string();
     let mut landmark_where_clauses: Vec<String> = Vec::new();
 
     if let Some(dimension) = landmark_filters.dimension.as_ref() {
@@ -462,10 +452,7 @@ pub async fn linked_landmarks(
     graph: &Graph,
     landmark_id: &Uuid,
 ) -> Result<Vec<LandmarkLink>, LandmarksError> {
-    let landmark_match = format!(
-        "MATCH (landmark:Landmark {{ id: '{}' }})",
-        landmark_id.to_string()
-    );
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
     let link_match = "MATCH (landmark)-[link:LINKEDTO]->(linked_landmark:Landmark)";
     let query_return = "RETURN link.link_type as link_type, linked_landmark as landmark";
     let full_query = format!(
@@ -524,11 +511,8 @@ pub async fn landmark_by_id(
     graph: &Graph,
     landmark_id: &Uuid,
 ) -> Result<Option<Landmark>, LandmarksError> {
-    let landmark_match = format!(
-        "MATCH (landmark:Landmark {{ id: '{}' }})",
-        landmark_id.to_string()
-    );
-    let selects_and_return = r#"
+    let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
+    let selects_and_return = r"
         OPTIONAL MATCH (landmark)-[:HASTAG]->(tag:Tag)
         OPTIONAL MATCH (landmark)-[:IN]->(dimension:Dimension)
         OPTIONAL MATCH (landmark)-[:HASFARM]->(farm:Farm)
@@ -538,7 +522,7 @@ pub async fn landmark_by_id(
         apoc.coll.toSet(collect(farm.name)) as farms,
         apoc.coll.toSet(collect(biome.name)) as biomes,
         dimension.name as dimension
-        "#;
+        ";
     let full_query = format!(
         "{landmark_match}
         {selects_and_return}"

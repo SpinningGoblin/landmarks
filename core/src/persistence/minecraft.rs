@@ -134,11 +134,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
             | Biome::EndMidlands
             | Biome::EndHighlands
             | Biome::EndBarrens => {
-                biome_merges.push(format!(
-                    "MERGE ({}: Biome {{name: '{}'}})",
-                    biome.to_string(),
-                    biome.to_string()
-                ));
+                biome_merges.push(format!("MERGE ({}: Biome {{name: '{}'}})", biome, biome));
                 biome_returns.push(biome.to_string());
             }
         };
@@ -149,8 +145,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
     Dimension::iter().for_each(|dimension| {
         dimension_merges.push(format!(
             "MERGE ({}: Dimension {{name: '{}'}})",
-            dimension.to_string(),
-            dimension.to_string()
+            dimension, dimension
         ));
         dimension_returns.push(dimension.to_string());
     });
@@ -160,8 +155,7 @@ pub async fn ensure_minecraft_nodes(graph: &Graph) -> Result<(), LandmarksError>
     Platform::iter().for_each(|platform| {
         platform_merges.push(format!(
             "MERGE ({}: Platform {{name: '{}'}})",
-            platform.to_string(),
-            platform.to_string()
+            platform, platform
         ));
         platform_returns.push(platform.to_string());
     });
