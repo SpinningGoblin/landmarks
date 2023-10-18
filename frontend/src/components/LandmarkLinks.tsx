@@ -72,7 +72,7 @@ export const LandmarkLinks: FC<LandmarkLinksProps> = ({
   }, [landmarks, landmarkLinks, landmarkId]);
 
   const showNewLinks =
-    possibleLinks.length > 0 && linkTypes.length > 0 && !addLinks.isLoading;
+    possibleLinks.length > 0 && linkTypes.length > 0 && !addLinks.isPending;
 
   return (
     <>
@@ -86,7 +86,7 @@ export const LandmarkLinks: FC<LandmarkLinksProps> = ({
               worldId={worldId}
             />
           ))}
-        {addLinks.isLoading && (
+        {addLinks.isPending && (
           <Typography variant="subtitle1">Saving links...</Typography>
         )}
         {showNewLinks && (

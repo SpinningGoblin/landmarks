@@ -8,7 +8,7 @@ export const AddWorld: FC = () => {
   const navigateToWorld = useNavigateToWorld();
   const { addWorld } = useAddWorld(navigateToWorld);
 
-  if (addWorld.isLoading) {
+  if (addWorld.isPending) {
     return <Typography variant="subtitle1">Saving ...</Typography>;
   }
 

@@ -16,20 +16,22 @@ import {
 import { CreateLandmark } from "../api/CreateLandmark";
 
 export const useLandmarkLinkTypes = () => {
-  const { data, isLoading } = useQuery(["linkTypes"], fetchLandmarkLinkTypes);
+  const queryKey = ["linkTypes"];
+  const { data, isLoading } = useQuery({
+    queryKey,
+    queryFn: fetchLandmarkLinkTypes,
+  });
 
   return { linkTypes: data ?? [], isLoading };
 };
 
 export const useLandmarks = (worldId?: string) => {
   const { currentUser } = useUser();
-  const { data: landmarks, isLoading } = useQuery(
-    ["landmarks", worldId],
-    () => fetchLandmarks(worldId, currentUser),
-    {
-      enabled: !!worldId && !!currentUser,
-    },
-  );
+  const { data: landmarks, isLoading } = useQuery({
+    queryKey: ["landmarks", worldId],
+    queryFn: () => fetchLandmarks(worldId, currentUser),
+    enabled: !!worldId && !!currentUser,
+  });
 
   return { landmarks, isLoading };
 };
@@ -37,13 +39,11 @@ export const useLandmarks = (worldId?: string) => {
 export const useLandmark = (landmarkId?: string) => {
   const { currentUser } = useUser();
 
-  const { data: landmark, isLoading } = useQuery(
-    ["landmarks", landmarkId],
-    () => fetchLandmark(landmarkId, currentUser),
-    {
-      enabled: !!landmarkId && !!currentUser,
-    },
-  );
+  const { data: landmark, isLoading } = useQuery({
+    queryKey: ["landmarks", landmarkId],
+    queryFn: () => fetchLandmark(landmarkId, currentUser),
+    enabled: !!landmarkId && !!currentUser,
+  });
 
   return { landmark, isLoading };
 };
@@ -55,7 +55,7 @@ export const useAddBiome = (onSuccess: () => void, landmarkId?: string) => {
   const mutation = useMutation({
     mutationFn: (biome: string) => addBiome(landmarkId, biome, currentUser),
     onSuccess: () => {
-      queryClient.invalidateQueries(["landmarks", landmarkId]);
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] });
       onSuccess();
     },
   });
@@ -69,7 +69,8 @@ export const useRemoveBiome = (landmarkId?: string) => {
 
   const mutation = useMutation({
     mutationFn: (biome: string) => removeBiome(landmarkId, biome, currentUser),
-    onSuccess: () => queryClient.invalidateQueries(["landmarks", landmarkId]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] }),
   });
 
   return { removeBiome: mutation };
@@ -82,7 +83,7 @@ export const useAddFarm = (onSuccess: () => void, landmarkId?: string) => {
   const mutation = useMutation({
     mutationFn: (farm: string) => addFarm(landmarkId, farm, currentUser),
     onSuccess: () => {
-      queryClient.invalidateQueries(["landmarks", landmarkId]);
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] });
       onSuccess();
     },
   });
@@ -96,7 +97,8 @@ export const useRemoveFarm = (landmarkId?: string) => {
 
   const mutation = useMutation({
     mutationFn: (farm: string) => removeFarm(landmarkId, farm, currentUser),
-    onSuccess: () => queryClient.invalidateQueries(["landmarks", landmarkId]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] }),
   });
 
   return { removeFarm: mutation };
@@ -109,7 +111,7 @@ export const useAddTag = (onSuccess: () => void, landmarkId?: string) => {
   const mutation = useMutation({
     mutationFn: (tag: string) => addTag(landmarkId, tag, currentUser),
     onSuccess: () => {
-      queryClient.invalidateQueries(["landmarks", landmarkId]);
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] });
       onSuccess();
     },
   });
@@ -123,7 +125,8 @@ export const useRemoveTag = (landmarkId?: string) => {
 
   const mutation = useMutation({
     mutationFn: (tag: string) => removeTag(landmarkId, tag, currentUser),
-    onSuccess: () => queryClient.invalidateQueries(["landmarks", landmarkId]),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] }),
   });
 
   return { removeTag: mutation };
@@ -137,7 +140,7 @@ export const useAddLandmark = (onSuccess: () => void, worldId?: string) => {
     mutationFn: (create: CreateLandmark) =>
       addLandmark(create, worldId, currentUser),
     onSuccess: () => {
-      queryClient.invalidateQueries(["landmarks", worldId]);
+      queryClient.invalidateQueries({ queryKey: ["landmarks", worldId] });
       onSuccess();
     },
   });
@@ -168,7 +171,7 @@ export const useLinkLandmarks = (
         currentUser,
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries(["landmarks", landmarkId]);
+      queryClient.invalidateQueries({ queryKey: ["landmarks", landmarkId] });
       onSuccess();
     },
   });

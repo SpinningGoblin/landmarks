@@ -41,7 +41,7 @@ export const ShareWorld: FC = () => {
     shareWorld.mutate({ user: newUser, worldId });
   };
 
-  const anyLoading = isLoading || worldLoading || shareWorld.isLoading;
+  const anyLoading = isLoading || worldLoading || shareWorld.isPending;
 
   return (
     <Container>

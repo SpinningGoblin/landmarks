@@ -22,13 +22,11 @@ export const useNavigateToWorld = () => {
 export const useWorlds = () => {
   const { currentUser } = useUser();
 
-  const { data: worlds, isLoading } = useQuery(
-    ["worlds"],
-    () => fetchWorlds(currentUser),
-    {
-      enabled: !!currentUser,
-    },
-  );
+  const { data: worlds, isLoading } = useQuery({
+    queryKey: ["worlds"],
+    queryFn: () => fetchWorlds(currentUser),
+    enabled: !!currentUser,
+  });
 
   return { worlds, isLoading };
 };
@@ -51,7 +49,7 @@ export const useAddWorld = (onSuccess: (newId: string) => void) => {
   const mutation = useMutation({
     mutationFn: (create: CreateWorld) => addWorld(create, currentUser),
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["worlds"]);
+      queryClient.invalidateQueries({ queryKey: ["worlds"] });
       onSuccess(data);
     },
   });
@@ -71,7 +69,7 @@ export const useShareWorld = () => {
   const mutation = useMutation({
     mutationFn: (args: ShareWorldArgs) =>
       shareWorldWithUser({ user: args.user }, args.worldId, currentUser),
-    onSuccess: () => queryClient.invalidateQueries(["worlds"]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["worlds"] }),
   });
 
   return { shareWorld: mutation };

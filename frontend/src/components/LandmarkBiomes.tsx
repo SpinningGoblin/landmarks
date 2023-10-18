@@ -33,7 +33,7 @@ export const LandmarkBiomes: FC<LandmarkBiomesProps> = ({
   const { addBiome } = useAddBiome(addBiomeCallback, landmarkId);
   const { biomes } = useBiomes();
 
-  const biomesSaving = removeBiome.isLoading || addBiome.isLoading;
+  const biomesSaving = removeBiome.isPending || addBiome.isPending;
 
   return (
     <>

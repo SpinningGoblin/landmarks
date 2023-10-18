@@ -40,8 +40,8 @@ export const Landmark: FC = () => {
   const { removeTag } = useRemoveTag(landmarkId);
   const { addTag } = useAddTag(addTagCallback, landmarkId);
 
-  const farmsSaving = removeFarm.isLoading || addFarm.isLoading;
-  const tagsSaving = removeTag.isLoading || addTag.isLoading;
+  const farmsSaving = removeFarm.isPending || addFarm.isPending;
+  const tagsSaving = removeTag.isPending || addTag.isPending;
 
   console.log((landmarks ?? []).filter((l) => l.id !== landmarkId));
 

@@ -17,7 +17,7 @@ export const AddLandmark: FC = () => {
 
   const landmark = buildEmptyEditingLandmark();
 
-  if (isLoading || addLandmark.isLoading) {
+  if (isLoading || addLandmark.isPending) {
     return <Typography>Loading ...</Typography>;
   }
 
