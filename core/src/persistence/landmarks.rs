@@ -126,7 +126,7 @@ pub async fn remove_tag(
         DELETE r",
     );
 
-    transaction.execute(query(&full_query)).await?;
+    transaction.run(query(&full_query)).await?;
     update_world_updated_at(transaction, &landmark_id).await?;
     Ok(())
 }
