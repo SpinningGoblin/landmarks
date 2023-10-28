@@ -5,13 +5,44 @@ use crate::{
     minecraft::{Biome, Coordinate, Dimension, Farm},
     LandmarksError, Tag,
 };
-use neo4rs::{query, Graph, Node, Txn};
+use neo4rs::{query, Graph, Txn};
+use serde::Deserialize;
 use time::format_description::well_known;
 use uuid::Uuid;
 
 use crate::landmarks::{CreateLandmark, Landmark, LandmarkMetadata};
 
 use super::worlds::set_world_updated_at_now;
+
+#[derive(Deserialize)]
+struct MetadataNode {
+    pub id: Uuid,
+    pub name: String,
+    pub notes: Option<String>,
+    pub x: i64,
+    pub y: i64,
+    pub z: i64,
+}
+
+#[derive(Deserialize)]
+struct SlimLandmarkRow {
+    pub landmark: MetadataNode,
+}
+
+#[derive(Deserialize)]
+struct LinkedLandmarkRow {
+    pub landmark: MetadataNode,
+    pub link_type: String,
+}
+
+#[derive(Deserialize)]
+struct FullLandmarkRow {
+    pub landmark: MetadataNode,
+    pub tags: Vec<String>,
+    pub farms: Vec<String>,
+    pub biomes: Vec<String>,
+    pub dimension: String,
+}
 
 pub async fn link_landmarks(
     transaction: &Txn,
@@ -417,31 +448,21 @@ pub async fn landmarks_for_world(
     let mut landmarks: Vec<LandmarkMetadata> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let landmark_node: Node =
-            row.get("landmark")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_landmark_node".to_string(),
+        let slim_landmark_row =
+            row.to::<SlimLandmarkRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
                 })?;
-        let name: String = landmark_node.get("name").unwrap_or_default();
-        let notes: Option<String> = landmark_node.get("notes");
-        let id_value: String =
-            landmark_node
-                .get("id")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_landmark_id".to_string(),
-                })?;
-        let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
-            message: e.to_string(),
-        })?;
-        let x: i64 = landmark_node.get("x").unwrap();
-        let y: i64 = landmark_node.get("y").unwrap();
-        let z: i64 = landmark_node.get("z").unwrap();
 
         landmarks.push(LandmarkMetadata {
-            id,
-            coordinate: Coordinate { x, y, z },
-            name,
-            notes,
+            id: slim_landmark_row.landmark.id,
+            coordinate: Coordinate {
+                x: slim_landmark_row.landmark.x,
+                y: slim_landmark_row.landmark.y,
+                z: slim_landmark_row.landmark.z,
+            },
+            name: slim_landmark_row.landmark.name,
+            notes: slim_landmark_row.landmark.notes,
         })
     }
 
@@ -467,40 +488,24 @@ pub async fn linked_landmarks(
     let mut links: Vec<LandmarkLink> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let landmark_node: Node =
-            row.get("landmark")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_landmark".to_string(),
-                })?;
-        let name: String = landmark_node.get("name").unwrap_or_default();
-        let notes: Option<String> = landmark_node.get("notes");
-        let id_value: String =
-            landmark_node
-                .get("id")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_landmark_id".to_string(),
-                })?;
-        let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
-            message: e.to_string(),
+        let linked_row = row.to::<LinkedLandmarkRow>().map_err(|e| {
+            LandmarksError::GraphDeserializationError {
+                message: e.to_string(),
+            }
         })?;
-        let x: i64 = landmark_node.get("x").unwrap();
-        let y: i64 = landmark_node.get("y").unwrap();
-        let z: i64 = landmark_node.get("z").unwrap();
-        let link_type_value: String =
-            row.get("link_type")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_link_type".to_string(),
-                })?;
-        let link_type: LandmarkLinkType = LandmarkLinkType::from_str(&link_type_value)
-            .map_err(|_| LandmarksError::InvalidLandmarkLinkType(link_type_value))?;
+        let link_type = LandmarkLinkType::from_str(&linked_row.link_type).ok();
         links.push(LandmarkLink {
             landmark_metadata: LandmarkMetadata {
-                id,
-                coordinate: Coordinate { x, y, z },
-                name,
-                notes,
+                id: linked_row.landmark.id,
+                coordinate: Coordinate {
+                    x: linked_row.landmark.x,
+                    y: linked_row.landmark.y,
+                    z: linked_row.landmark.z,
+                },
+                name: linked_row.landmark.name,
+                notes: linked_row.landmark.notes,
             },
-            link_type: Some(link_type),
+            link_type,
         });
     }
 
@@ -532,65 +537,44 @@ pub async fn landmark_by_id(
 
     match result.next().await {
         Ok(Some(row)) => {
-            let landmark_node: Node =
-                row.get("landmark")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_landmark_node".to_string(),
-                    })?;
-            let name: String = landmark_node.get("name").unwrap_or_default();
-            let notes: Option<String> = landmark_node.get("notes");
-            let id_value: String =
-                landmark_node
-                    .get("id")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_landmark_id".to_string(),
-                    })?;
-            let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
-                message: e.to_string(),
+            let full_row = row.to::<FullLandmarkRow>().map_err(|e| {
+                LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
+                }
             })?;
-            let x: i64 = landmark_node.get("x").unwrap();
-            let y: i64 = landmark_node.get("y").unwrap();
-            let z: i64 = landmark_node.get("z").unwrap();
 
-            let tag_values: Vec<String> =
-                row.get("tags")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_tags_column".to_string(),
-                    })?;
-            let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
+            let tags: Vec<Tag> = full_row
+                .tags
+                .iter()
+                .flat_map(|val| Tag::from_str(&val))
+                .collect();
 
-            let farm_values: Vec<String> =
-                row.get("farms")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_farms_column".to_string(),
-                    })?;
-            let farms = farm_values.into_iter().map(Farm).collect::<Vec<Farm>>();
+            let farms: Vec<Farm> = full_row
+                .farms
+                .iter()
+                .flat_map(|val| Farm::from_str(&val))
+                .collect();
 
-            let biome_values: Vec<String> =
-                row.get("biomes")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_biomes_column".to_string(),
-                    })?;
-            let biomes = biome_values
-                .into_iter()
-                .map(|name| Biome::from_str(&name).unwrap())
-                .collect::<Vec<Biome>>();
+            let biomes: Vec<Biome> = full_row
+                .biomes
+                .iter()
+                .flat_map(|val| Biome::from_str(&val))
+                .collect();
 
-            let dimension_value: String =
-                row.get("dimension")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_dimension_column".to_string(),
-                    })?;
-            let dimension = Dimension::from_str(&dimension_value).unwrap();
+            let dimension: Dimension = Dimension::from_str(&full_row.dimension).unwrap();
 
             let links = linked_landmarks(graph, landmark_id).await?;
 
             Ok(Some(Landmark {
                 metadata: LandmarkMetadata {
-                    id,
-                    coordinate: Coordinate { x, y, z },
-                    name,
-                    notes,
+                    id: full_row.landmark.id,
+                    coordinate: Coordinate {
+                        x: full_row.landmark.x,
+                        y: full_row.landmark.y,
+                        z: full_row.landmark.z,
+                    },
+                    name: full_row.landmark.name,
+                    notes: full_row.landmark.notes,
                 },
                 farms,
                 tags,

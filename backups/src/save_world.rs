@@ -10,11 +10,17 @@ pub async fn save_world(
 ) -> Result<String, anyhow::Error> {
     println!("Starting save of world");
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let Ok(Some(world)) =
-        landmarks_core::persistence::worlds::world_export_by_id(&graph, world_id).await
-    else {
-        println!("No world with id {world_id}");
-        return Err(anyhow::Error::msg("no world"));
+    let find_result =
+        landmarks_core::persistence::worlds::world_export_by_id(&graph, world_id).await;
+    let world = match find_result {
+        Ok(Some(it)) => it,
+        Ok(None) => {
+            println!("No world with id {world_id}");
+            return Err(anyhow::Error::msg("no world"));
+        }
+        Err(e) => {
+            return Err(anyhow::Error::msg(e.to_string()));
+        }
     };
 
     if let Some(backup_date) = &app_state.last_backed_up_date {

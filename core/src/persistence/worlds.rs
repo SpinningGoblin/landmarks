@@ -5,7 +5,8 @@ use crate::{
     users::User,
     LandmarksError, Tag,
 };
-use neo4rs::{query, Graph, Node, Query, Txn};
+use neo4rs::{query, Graph, Query, Txn};
+use serde::Deserialize;
 use time::{format_description::well_known, OffsetDateTime};
 use uuid::Uuid;
 
@@ -49,6 +50,34 @@ pub async fn set_world_updated_at_now(
     Ok(())
 }
 
+#[derive(Deserialize)]
+struct WorldNode {
+    pub seed: Seed,
+    pub name: Option<String>,
+    pub notes: Option<String>,
+    pub id: Uuid,
+    pub updated_at: String,
+}
+
+#[derive(Deserialize)]
+struct WorldRow {
+    pub world: WorldNode,
+    pub tags: Vec<Tag>,
+    pub platform: String,
+    pub creator: String,
+    pub shared_users: Vec<String>,
+}
+
+#[derive(Deserialize)]
+struct FullWorldRow {
+    pub world: WorldNode,
+    pub tags: Vec<Tag>,
+    pub platform: String,
+    pub creator: String,
+    pub shared_users: Vec<String>,
+    pub landmarks: Vec<String>,
+}
+
 pub async fn world_export_by_id(
     graph: &Graph,
     world_id: &Uuid,
@@ -77,82 +106,45 @@ pub async fn world_export_by_id(
 
     match world_result.next().await {
         Ok(Some(row)) => {
-            let world_node: Node =
-                row.get("world")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_world_node".to_string(),
-                    })?;
-            let seed = world_node.get("seed").map(Seed).ok_or(
+            let world_row = row.to::<FullWorldRow>().map_err(|e| {
                 LandmarksError::GraphDeserializationError {
-                    message: "no_world_seed".to_string(),
-                },
-            )?;
-            let name: Option<String> = world_node.get("name");
-            let notes: Option<String> = world_node.get("notes");
-            let id_value: String =
-                world_node
-                    .get("id")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_world_id".to_string(),
-                    })?;
-            let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
-                message: e.to_string(),
+                    message: e.to_string(),
+                }
             })?;
-            let updated_at_val: Option<String> = world_node.get("updated_at");
-            let updated_at: Option<OffsetDateTime> = updated_at_val
-                .map(|val| OffsetDateTime::parse(&val, &well_known::Rfc3339).unwrap());
-            let tag_values: Vec<String> =
-                row.get("tags")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_tags_column".to_string(),
-                    })?;
-            let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
+            let updated_at: Option<OffsetDateTime> =
+                OffsetDateTime::parse(&world_row.world.updated_at, &well_known::Rfc3339).ok();
 
-            let platform_name: String =
-                row.get("platform")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_platform_column".to_string(),
-                    })?;
-            let platform = Platform::from_str(&platform_name)?;
-
-            let creator: String =
-                row.get("creator")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_creator_column".to_string(),
-                    })?;
-            let landmark_ids: Vec<String> =
-                row.get("landmarks")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_landmarks_column".to_string(),
-                    })?;
+            let platform = Platform::from_str(&world_row.platform).map_err(|e| {
+                LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
+                }
+            })?;
 
             let mut landmarks: Vec<Landmark> = Vec::new();
 
-            for landmark_id in landmark_ids {
-                let id = Uuid::parse_str(&landmark_id).unwrap();
+            for landmark_id in world_row.landmarks {
+                let id = Uuid::from_str(&landmark_id).unwrap();
                 let landmark = super::landmarks::landmark_by_id(graph, &id).await?.unwrap();
                 landmarks.push(landmark);
             }
 
-            let shared_name_values: Vec<String> =
-                row.get("shared_users")
-                    .ok_or(LandmarksError::GraphDeserializationError {
-                        message: "no_shared_users_column".to_string(),
-                    })?;
-            let shared_users = shared_name_values
+            let shared_users = world_row
+                .shared_users
                 .into_iter()
                 .map(|name| User { name })
                 .collect::<Vec<User>>();
 
             Ok(Some(World {
                 metadata: WorldMetadata {
-                    id,
-                    seed,
-                    name,
-                    tags,
+                    id: world_row.world.id,
+                    seed: world_row.world.seed,
+                    name: world_row.world.name,
+                    tags: world_row.tags,
                     platform,
-                    notes,
-                    creator: User { name: creator },
+                    notes: world_row.world.notes,
+                    creator: User {
+                        name: world_row.creator,
+                    },
                     shared_users,
                     updated_at,
                 },
@@ -202,72 +194,31 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
     let mut worlds: Vec<WorldMetadata> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let world_node: Node =
-            row.get("world")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_world_node".to_string(),
+        let world_row =
+            row.to::<WorldRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
                 })?;
-        let seed =
-            world_node
-                .get("seed")
-                .map(Seed)
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_world_seed".to_string(),
-                })?;
-        let name: Option<String> = world_node.get("name");
-        let notes: Option<String> = world_node.get("notes");
-        let id_value: String =
-            world_node
-                .get("id")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_world_id".to_string(),
-                })?;
-        let id = Uuid::parse_str(&id_value).map_err(|e| LandmarksError::InvalidUuid {
-            message: e.to_string(),
-        })?;
 
-        let updated_at_val: Option<String> = world_node.get("updated_at");
         let updated_at: Option<OffsetDateTime> =
-            updated_at_val.map(|val| OffsetDateTime::parse(&val, &well_known::Rfc3339).unwrap());
+            OffsetDateTime::parse(&world_row.world.updated_at, &well_known::Rfc3339).ok();
 
-        let tag_values: Vec<String> =
-            row.get("tags")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_tags_column".to_string(),
-                })?;
-        let tags = tag_values.into_iter().map(Tag).collect::<Vec<Tag>>();
-
-        let platform_name: String =
-            row.get("platform")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_platform_column".to_string(),
-                })?;
-        let platform = Platform::from_str(&platform_name)?;
-
-        let creator: String =
-            row.get("creator")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_world_creator".to_string(),
-                })?;
-
-        let shared_name_values: Vec<String> =
-            row.get("shared_users")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_shared_users_column".to_string(),
-                })?;
-        let shared_users = shared_name_values
+        let shared_users = world_row
+            .shared_users
             .into_iter()
             .map(|name| User { name })
             .collect::<Vec<User>>();
 
         worlds.push(WorldMetadata {
-            id,
-            seed,
-            name,
-            notes,
-            tags,
-            platform,
-            creator: User { name: creator },
+            id: world_row.world.id,
+            seed: world_row.world.seed,
+            name: world_row.world.name,
+            notes: world_row.world.notes,
+            tags: world_row.tags,
+            platform: Platform::from_str(&world_row.platform).unwrap(),
+            creator: User {
+                name: world_row.creator,
+            },
             shared_users,
             updated_at,
         });

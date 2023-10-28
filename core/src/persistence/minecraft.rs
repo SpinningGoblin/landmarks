@@ -1,12 +1,18 @@
 use std::str::FromStr;
 
 use neo4rs::{query, Graph};
+use serde::Deserialize;
 use strum::IntoEnumIterator;
 
 use crate::{
     minecraft::{Biome, Dimension, Platform},
     LandmarksError,
 };
+
+#[derive(Deserialize)]
+struct DimensionRow {
+    pub dimension: String,
+}
 
 pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, LandmarksError> {
     let dimension_match = "MATCH (dimension:Dimension) RETURN dimension.name as dimension";
@@ -15,16 +21,21 @@ pub async fn list_dimensions(graph: &Graph) -> Result<Vec<Dimension>, LandmarksE
     let mut dimensions: Vec<Dimension> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String =
-            row.get("dimension")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_dimension_value".to_string(),
+        let dimension_row =
+            row.to::<DimensionRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
                 })?;
 
-        dimensions.push(Dimension::from_str(&value).unwrap());
+        dimensions.push(Dimension::from_str(&dimension_row.dimension).unwrap());
     }
 
     Ok(dimensions)
+}
+
+#[derive(Deserialize)]
+struct BiomeRow {
+    pub biome: String,
 }
 
 pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, LandmarksError> {
@@ -34,16 +45,21 @@ pub async fn list_biomes(graph: &Graph) -> Result<Vec<Biome>, LandmarksError> {
     let mut biomes: Vec<Biome> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String = row
-            .get("biome")
-            .ok_or(LandmarksError::GraphDeserializationError {
-                message: "no_biome_value".to_string(),
-            })?;
+        let biome_row =
+            row.to::<BiomeRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
+                })?;
 
-        biomes.push(Biome::from_str(&value).unwrap());
+        biomes.push(Biome::from_str(&biome_row.biome).unwrap());
     }
 
     Ok(biomes)
+}
+
+#[derive(Deserialize)]
+struct PlatformRow {
+    pub platform: String,
 }
 
 pub async fn list_platforms(graph: &Graph) -> Result<Vec<Platform>, LandmarksError> {
@@ -53,13 +69,13 @@ pub async fn list_platforms(graph: &Graph) -> Result<Vec<Platform>, LandmarksErr
     let mut platforms: Vec<Platform> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let value: String =
-            row.get("platform")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_platform_value".to_string(),
+        let platform_row =
+            row.to::<PlatformRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
                 })?;
 
-        platforms.push(Platform::from_str(&value).unwrap());
+        platforms.push(Platform::from_str(&platform_row.platform).unwrap());
     }
 
     Ok(platforms)

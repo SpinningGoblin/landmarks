@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # neo4rs = { git = "https://github.com/neo4j-labs/neo4rs.git", rev = "7d38f42009438fda8c584f1b1a7bb78bd8b77aff" }
-neo4rs = { git = "https://github.com/derrickp/neo4rs.git", branch = "chrono-0.5" }
+neo4rs = { git = "https://github.com/neo4j-labs/neo4rs.git", branch = "master" }
 serde = { version = "1.0", features = ["derive"] }
 strum = "0.25"
 strum_macros = "0.25"

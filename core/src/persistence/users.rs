@@ -1,6 +1,12 @@
-use neo4rs::{query, Graph, Node};
+use neo4rs::{query, Graph};
+use serde::Deserialize;
 
 use crate::{users::User, LandmarksError};
+
+#[derive(Deserialize)]
+struct UserRow {
+    pub user: String,
+}
 
 pub async fn list_users(graph: &Graph) -> Result<Vec<User>, LandmarksError> {
     let user_match = "MATCH (user:User)";
@@ -10,19 +16,15 @@ pub async fn list_users(graph: &Graph) -> Result<Vec<User>, LandmarksError> {
     let mut users: Vec<User> = Vec::new();
 
     while let Ok(Some(row)) = result.next().await {
-        let user_node: Node = row
-            .get("user")
-            .ok_or(LandmarksError::GraphDeserializationError {
-                message: "no_user_node".to_string(),
-            })?;
-        let name: String =
-            user_node
-                .get("name")
-                .ok_or(LandmarksError::GraphDeserializationError {
-                    message: "no_user_name".to_string(),
+        let user_row =
+            row.to::<UserRow>()
+                .map_err(|e| LandmarksError::GraphDeserializationError {
+                    message: e.to_string(),
                 })?;
 
-        users.push(User { name });
+        users.push(User {
+            name: user_row.user,
+        });
     }
 
     Ok(users)
