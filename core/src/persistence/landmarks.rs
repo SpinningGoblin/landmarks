@@ -546,19 +546,19 @@ pub async fn landmark_by_id(
             let tags: Vec<Tag> = full_row
                 .tags
                 .iter()
-                .flat_map(|val| Tag::from_str(&val))
+                .flat_map(|val| Tag::from_str(val))
                 .collect();
 
             let farms: Vec<Farm> = full_row
                 .farms
                 .iter()
-                .flat_map(|val| Farm::from_str(&val))
+                .flat_map(|val| Farm::from_str(val))
                 .collect();
 
             let biomes: Vec<Biome> = full_row
                 .biomes
                 .iter()
-                .flat_map(|val| Biome::from_str(&val))
+                .flat_map(|val| Biome::from_str(val))
                 .collect();
 
             let dimension: Dimension = Dimension::from_str(&full_row.dimension).unwrap();
