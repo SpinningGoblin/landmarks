@@ -71,8 +71,8 @@ pub async fn add_landmark_to_world(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
-    let id = persistence::landmarks::create(&transaction, world_id, input, &user)
+    let mut transaction = graph.start_txn().await.unwrap();
+    let id = persistence::landmarks::create(&mut transaction, world_id, input, &user)
         .await
         .unwrap();
     transaction.commit().await.unwrap();
@@ -90,10 +90,10 @@ pub async fn link_landmarks(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::link_landmarks(
-        &transaction,
+        &mut transaction,
         &add_landmark_link.landmark_id_1,
         &add_landmark_link.landmark_id_2,
         &add_landmark_link.link_type,
@@ -117,9 +117,9 @@ pub async fn add_biome_to_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::add_biome(&transaction, landmark_id, add_biome.biome)
+    persistence::landmarks::add_biome(&mut transaction, landmark_id, add_biome.biome)
         .await
         .unwrap();
 
@@ -139,9 +139,9 @@ pub async fn remove_biome_from_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::remove_biome(&transaction, landmark_id, remove_biome.biome)
+    persistence::landmarks::remove_biome(&mut transaction, landmark_id, remove_biome.biome)
         .await
         .unwrap();
 
@@ -161,9 +161,9 @@ pub async fn add_tag_to_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::add_tag(&transaction, landmark_id, add_tag.tag)
+    persistence::landmarks::add_tag(&mut transaction, landmark_id, add_tag.tag)
         .await
         .unwrap();
 
@@ -183,9 +183,9 @@ pub async fn update_notes_on_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::update_notes(&transaction, landmark_id, &update_notes.notes)
+    persistence::landmarks::update_notes(&mut transaction, landmark_id, &update_notes.notes)
         .await
         .unwrap();
 
@@ -205,10 +205,10 @@ pub async fn update_coordinate_on_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
     persistence::landmarks::update_coordinate(
-        &transaction,
+        &mut transaction,
         landmark_id,
         &update_coordinate.coordinate,
     )
@@ -231,9 +231,9 @@ pub async fn remove_tag_from_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::remove_tag(&transaction, landmark_id, remove_tag.tag)
+    persistence::landmarks::remove_tag(&mut transaction, landmark_id, remove_tag.tag)
         .await
         .unwrap();
 
@@ -253,9 +253,9 @@ pub async fn add_farm_to_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::add_farm(&transaction, landmark_id, add_farm.farm)
+    persistence::landmarks::add_farm(&mut transaction, landmark_id, add_farm.farm)
         .await
         .unwrap();
 
@@ -275,9 +275,9 @@ pub async fn remove_farm_from_landmark(
     };
 
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::landmarks::remove_farm(&transaction, landmark_id, remove_farm.farm)
+    persistence::landmarks::remove_farm(&mut transaction, landmark_id, remove_farm.farm)
         .await
         .unwrap();
 

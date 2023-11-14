@@ -55,8 +55,8 @@ pub async fn create_world(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
-    let id = persistence::worlds::create(&transaction, &user, &input)
+    let mut transaction = graph.start_txn().await.unwrap();
+    let id = persistence::worlds::create(&mut transaction, &user, &input)
         .await
         .unwrap();
     transaction.commit().await.unwrap();
@@ -78,9 +78,9 @@ pub async fn share_world(
         return Err((StatusCode::UNAUTHORIZED, "no_auth".to_string()));
     };
     let graph = app_state.connection_config().to_graph().await.unwrap();
-    let transaction = graph.start_txn().await.unwrap();
+    let mut transaction = graph.start_txn().await.unwrap();
 
-    persistence::worlds::share_world(&transaction, &user, &world_id, &input.user)
+    persistence::worlds::share_world(&mut transaction, &user, &world_id, &input.user)
         .await
         .unwrap();
     transaction.commit().await.unwrap();

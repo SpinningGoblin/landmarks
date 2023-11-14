@@ -24,16 +24,16 @@ fn world_match_query(world_id: &Uuid) -> Query {
 }
 
 pub async fn check_world_exists(
-    transaction: &Txn,
+    transaction: &mut Txn,
     world_id: &Uuid,
 ) -> Result<bool, LandmarksError> {
     let mut result = transaction.execute(world_match_query(world_id)).await?;
-    let world_row = result.next().await?;
+    let world_row = result.next(transaction).await?;
     Ok(world_row.is_some())
 }
 
 pub async fn set_world_updated_at_now(
-    transaction: &Txn,
+    transaction: &mut Txn,
     world_id: &Uuid,
 ) -> Result<(), LandmarksError> {
     let now = time::OffsetDateTime::now_utc()
@@ -228,7 +228,7 @@ pub async fn all_for_user(graph: &Graph, user: &str) -> Result<Vec<WorldMetadata
 }
 
 pub async fn create(
-    transaction: &Txn,
+    transaction: &mut Txn,
     user: &str,
     create_world: &CreateWorld,
 ) -> Result<Uuid, LandmarksError> {
@@ -286,7 +286,7 @@ pub async fn create(
 }
 
 pub async fn share_world(
-    transaction: &Txn,
+    transaction: &mut Txn,
     creator: &str,
     world_id: &Uuid,
     user: &str,

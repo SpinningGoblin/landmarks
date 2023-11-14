@@ -45,7 +45,7 @@ struct FullLandmarkRow {
 }
 
 pub async fn link_landmarks(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id_1: &Uuid,
     landmark_id_2: &Uuid,
     link_type: &Option<LandmarkLinkType>,
@@ -83,7 +83,7 @@ pub async fn link_landmarks(
 }
 
 pub async fn add_biome(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     biome: Biome,
 ) -> Result<(), LandmarksError> {
@@ -104,7 +104,7 @@ pub async fn add_biome(
 }
 
 pub async fn remove_biome(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     biome: Biome,
 ) -> Result<(), LandmarksError> {
@@ -124,7 +124,11 @@ pub async fn remove_biome(
     Ok(())
 }
 
-pub async fn add_tag(transaction: &Txn, landmark_id: Uuid, tag: Tag) -> Result<(), LandmarksError> {
+pub async fn add_tag(
+    transaction: &mut Txn,
+    landmark_id: Uuid,
+    tag: Tag,
+) -> Result<(), LandmarksError> {
     let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
     let tag_merge = format!("MERGE (tag:Tag {{ name: '{}' }})", tag);
     let tag_rel_merge = "MERGE (landmark)-[:HASTAG]->(tag)";
@@ -142,7 +146,7 @@ pub async fn add_tag(transaction: &Txn, landmark_id: Uuid, tag: Tag) -> Result<(
 }
 
 pub async fn remove_tag(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     tag: Tag,
 ) -> Result<(), LandmarksError> {
@@ -163,7 +167,7 @@ pub async fn remove_tag(
 }
 
 pub async fn add_farm(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     farm: Farm,
 ) -> Result<(), LandmarksError> {
@@ -184,7 +188,7 @@ pub async fn add_farm(
 }
 
 pub async fn remove_farm(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     farm: Farm,
 ) -> Result<(), LandmarksError> {
@@ -205,7 +209,7 @@ pub async fn remove_farm(
 }
 
 pub async fn update_coordinate(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     coordinate: &Coordinate,
 ) -> Result<(), LandmarksError> {
@@ -235,7 +239,7 @@ pub async fn update_coordinate(
 }
 
 pub async fn update_notes(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: Uuid,
     notes: &str,
 ) -> Result<(), LandmarksError> {
@@ -252,7 +256,7 @@ pub async fn update_notes(
 }
 
 pub async fn update_world_updated_at(
-    transaction: &Txn,
+    transaction: &mut Txn,
     landmark_id: &Uuid,
 ) -> Result<(), LandmarksError> {
     let landmark_match = format!("MATCH (landmark:Landmark {{ id: '{}' }})", landmark_id);
@@ -269,7 +273,7 @@ pub async fn update_world_updated_at(
     );
     let mut result = transaction.execute(query(&full_query)).await?;
 
-    if result.next().await?.is_none() {
+    if result.next(transaction).await?.is_none() {
         println!("Couldn't find world for landmark {landmark_id}");
     };
 
@@ -277,7 +281,7 @@ pub async fn update_world_updated_at(
 }
 
 pub async fn create(
-    transaction: &Txn,
+    transaction: &mut Txn,
     world_id: Uuid,
     create: CreateLandmark,
     user: &str,
