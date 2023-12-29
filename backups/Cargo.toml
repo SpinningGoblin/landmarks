@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-aws-config = { version = "1.0", features = ["behavior-version-latest"] }
-aws-sdk-s3 = "1.4"
+aws-config = { version = "1.1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1.11"
 landmarks_core = { path = "../core" }
 serde_json = "1.0"
 time = { version = "0.3", features = ["formatting", "parsing", "serde"] }
-tokio = { version = "1.34", features = ["full"] }
+tokio = { version = "1.35", features = ["full"] }
 uuid = { version = "1.6", features = ["v4", "serde", "fast-rng"] }
