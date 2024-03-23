@@ -4,8 +4,13 @@ use serde::Deserialize;
 use crate::{users::User, LandmarksError};
 
 #[derive(Deserialize)]
+struct UserNode {
+    pub name: String,
+}
+
+#[derive(Deserialize)]
 struct UserRow {
-    pub user: String,
+    pub user: UserNode,
 }
 
 pub async fn list_users(graph: &Graph) -> Result<Vec<User>, LandmarksError> {
@@ -23,7 +28,7 @@ pub async fn list_users(graph: &Graph) -> Result<Vec<User>, LandmarksError> {
                 })?;
 
         users.push(User {
-            name: user_row.user,
+            name: user_row.user.name,
         });
     }
 
