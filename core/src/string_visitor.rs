@@ -2,7 +2,7 @@ use serde::de::Visitor;
 
 pub struct StringVisitor;
 
-impl<'de> Visitor<'de> for StringVisitor {
+impl Visitor<'_> for StringVisitor {
     type Value = String;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {

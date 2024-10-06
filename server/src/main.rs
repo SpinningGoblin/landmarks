@@ -35,40 +35,43 @@ async fn main() {
         .route("/platforms", get(list_platforms))
         .route("/worlds", get(worlds_for_user))
         .route("/worlds", post(create_world))
-        .route("/worlds/:world_id/share", post(share_world))
-        .route("/worlds/:world_id/landmarks", post(add_landmark_to_world))
-        .route("/worlds/:world_id/landmarks", get(landmarks_for_world))
-        .route("/worlds/:world_id/export", get(world_export))
+        .route("/worlds/{world_id}/share", post(share_world))
+        .route("/worlds/{world_id}/landmarks", post(add_landmark_to_world))
+        .route("/worlds/{world_id}/landmarks", get(landmarks_for_world))
+        .route("/worlds/{world_id}/export", get(world_export))
         .route("/landmarks/link", post(link_landmarks))
         .route("/landmarks/link_types", get(list_landmark_link_types))
-        .route("/landmarks/:landmark_id", get(landmark_by_id))
+        .route("/landmarks/{landmark_id}", get(landmark_by_id))
         .route(
-            "/landmarks/:landmark_id/add_farm",
+            "/landmarks/{landmark_id}/add_farm",
             post(add_farm_to_landmark),
         )
-        .route("/landmarks/:landmark_id/add_tag", post(add_tag_to_landmark))
         .route(
-            "/landmarks/:landmark_id/remove_farm",
+            "/landmarks/{landmark_id}/add_tag",
+            post(add_tag_to_landmark),
+        )
+        .route(
+            "/landmarks/{landmark_id}/remove_farm",
             post(remove_farm_from_landmark),
         )
         .route(
-            "/landmarks/:landmark_id/remove_tag",
+            "/landmarks/{landmark_id}/remove_tag",
             post(remove_tag_from_landmark),
         )
         .route(
-            "/landmarks/:landmark_id/add_biome",
+            "/landmarks/{landmark_id}/add_biome",
             post(add_biome_to_landmark),
         )
         .route(
-            "/landmarks/:landmark_id/remove_biome",
+            "/landmarks/{landmark_id}/remove_biome",
             post(remove_biome_from_landmark),
         )
         .route(
-            "/landmarks/:landmark_id/update_notes",
+            "/landmarks/{landmark_id}/update_notes",
             post(update_notes_on_landmark),
         )
         .route(
-            "/landmarks/:landmark_id/update_coordinate",
+            "/landmarks/{landmark_id}/update_coordinate",
             post(update_coordinate_on_landmark),
         )
         .route("/users", get(list_users))
