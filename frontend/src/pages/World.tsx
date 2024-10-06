@@ -21,7 +21,7 @@ export const World: FC = () => {
           {(world?.tags ?? []).length > 0 && (
             <Stack direction="row" spacing={1} alignItems={"center"}>
               <Typography variant="subtitle1">Tags</Typography>
-              <Stack>
+              <Stack direction="row">
                 {world?.tags.map((tag, index) => (
                   <Chip key={index} label={tag} />
                 ))}
