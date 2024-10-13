@@ -18,10 +18,16 @@ use super::worlds::set_world_updated_at_now;
 struct MetadataNode {
     pub id: Uuid,
     pub name: String,
+    #[serde(default)]
     pub notes: Option<String>,
-    pub x: i64,
-    pub y: i64,
-    pub z: i64,
+    pub coordinate_3d: Coordinate3d,
+}
+
+#[derive(Deserialize)]
+struct Coordinate3d {
+    pub x: serde_json::Number,
+    pub y: serde_json::Number,
+    pub z: serde_json::Number,
 }
 
 #[derive(Deserialize)]
@@ -461,9 +467,9 @@ pub async fn landmarks_for_world(
         landmarks.push(LandmarkMetadata {
             id: slim_landmark_row.landmark.id,
             coordinate: Coordinate {
-                x: slim_landmark_row.landmark.x,
-                y: slim_landmark_row.landmark.y,
-                z: slim_landmark_row.landmark.z,
+                x: slim_landmark_row.landmark.coordinate_3d.x,
+                y: slim_landmark_row.landmark.coordinate_3d.y,
+                z: slim_landmark_row.landmark.coordinate_3d.z,
             },
             name: slim_landmark_row.landmark.name,
             notes: slim_landmark_row.landmark.notes,
@@ -502,9 +508,9 @@ pub async fn linked_landmarks(
             landmark_metadata: LandmarkMetadata {
                 id: linked_row.landmark.id,
                 coordinate: Coordinate {
-                    x: linked_row.landmark.x,
-                    y: linked_row.landmark.y,
-                    z: linked_row.landmark.z,
+                    x: linked_row.landmark.coordinate_3d.x,
+                    y: linked_row.landmark.coordinate_3d.y,
+                    z: linked_row.landmark.coordinate_3d.z,
                 },
                 name: linked_row.landmark.name,
                 notes: linked_row.landmark.notes,
@@ -573,9 +579,9 @@ pub async fn landmark_by_id(
                 metadata: LandmarkMetadata {
                     id: full_row.landmark.id,
                     coordinate: Coordinate {
-                        x: full_row.landmark.x,
-                        y: full_row.landmark.y,
-                        z: full_row.landmark.z,
+                        x: full_row.landmark.coordinate_3d.x,
+                        y: full_row.landmark.coordinate_3d.y,
+                        z: full_row.landmark.coordinate_3d.z,
                     },
                     name: full_row.landmark.name,
                     notes: full_row.landmark.notes,
